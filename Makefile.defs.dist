@@ -1,0 +1,53 @@
+#
+# Macro definitions of possibly non-portable stuff for the btparse library.
+#
+
+# If "cc -O2" on your system is ANSI compliant and produces correct code,
+# then you probably don't have to change anything here.  If that's not the
+# case, though, you might have to change the compiler and/or its flags.
+# For instance, under SunOS or Solaris, you'll need to set CC to either gcc
+# or acc (whichever you have).
+# 
+# The OPT2 and CFLAGS2 variables are used for compiling PCCTS-generated
+# source files, so that I can use -Wall on my own code but not on the
+# warning-prone parser/lexer code.  Here, they should just be identical to
+# OPT and CFLAGS.
+# 
+# On some systems (SunOS?), you might need to set RANLIB.  (ranlib appears
+# to be unnecessary on more modern systems, so I have left it blank.)
+# 
+# Apart from CC, OPT, and RANLIB, though, you shouldn't have to change
+# anything here.
+# 
+
+#CC = gcc#                         # you need an ANSI compiler
+OPT = -O2
+OPT2 = $(OPT)
+CFLAGS = $(OPT) -I$(ANTLR_H)
+CFLAGS2 = $(CFLAGS)
+
+SHELL = /bin/sh
+
+# These settings work on modern systems such as Linux and IRIX.
+AR = ar
+ARFLAGS = rsuc
+RANLIB =
+
+# Archaic systems such as SunOS need these settings:
+#AR = ar
+#ARFLAGS = ruc
+#RANLIB = ranlib
+
+
+# PCCTS programs, directories, and options -- if you have some weird and
+# arcane version of PCCTS and you intend to use it, you might have to
+# change these, but I doubt it.
+
+ANTLR_H = pccts#                     # included with btparse package
+ANTLR = antlr
+DLG = dlg
+RUN_PCCTS =                          # no point in this if no PCCTS
+PERL =                               # and no point in this if no run_pccts!
+
+AFLAGS = -ga -gh -gt
+DFLAGS = -C2 -i

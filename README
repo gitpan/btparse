@@ -1,0 +1,180 @@
+                                btparse
+                  (a C library to parse BibTeX files)
+
+                              version 0.2
+                           8 September, 1997
+                   Greg Ward (greg@bic.mni.mcgill.ca)
+                                    
+Copyright (c) 1997 by Gregory P. Ward.  All rights reserved.
+
+This library is free software; you can redistribute it and/or modify it
+under the terms of the GNU Library General Public License as published by
+the Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+License for more details.
+
+(Please note that this licence statement only covers the source files in
+the top-level distribution directory.  Source files in the "progs" and "t"
+sub-directories are covered by either the GNU Library General Public
+License (getopt.c, getopt1.c, and getopt.h, which come from the GNU C
+Library) or the GNU General Public Licence (all other files, which were
+written by me).  The files in the "pccts" subdirectory are part of PCCTS
+1.33, and were written (for the most part) by Terence Parr.  They are *not*
+covered by either GNU licence.  In all cases, consult each file for the
+appropriate copyright and licensing information.)
+
+
+INTRODUCTION
+------------
+
+btparse is a C library for parsing and processing BibTeX files.  Its
+primary use is as the back-end to my Text::BibTeX module for Perl 5, but
+there's nothing to prevent you from writing C programs using btparse (or
+from writing extensions to other high-level languages using btparse as a
+back-end).  (Except, perhaps, that the documentation is a bit skimpy).
+
+It is built on top of a lexical analyzer and parser constructed using PCCTS
+(the Purdue Compiler Construction Tool Set), which provides efficient,
+reliable parsing with excellent error detection, reporting, and recovery.
+The library provides entry points to the parser, functions to traverse and
+query the abstract-syntax tree that results, and some functions for
+processing strings in "the BibTeX way".  The only requirement for building
+the library is an ANSI-compliant C compiler.  In particular, you do *not*
+need PCCTS, because enough of it is included in the distribution to build
+btparse.  (Of course, if you play with the grammar file (bibtex.g), then
+you will need PCCTS to re-build the library.  If you do this, though, you
+probably know what you're doing and already have PCCTS.)
+
+You can find the latest version of btparse (as well as its companion
+Perl module, Text::BibTeX) at
+
+    ftp://ftp.bic.mni.mcgill.ca/pub/users/greg
+
+as well as on any CPAN (Comprehensive Perl Archive Network) site, in
+modules/by-authors/Greg_Ward/.
+
+
+BUILDING
+--------
+
+To build the library (which you will have to do in any case, even if you
+just want to use it through my Perl module), do the following:
+
+   1) Take a look in Makefile.defs; in particular, you might have to 
+      change CC, OPT, ARFLAGS, and RANLIB, especially if you're running 
+      an archaic OS such as SunOS.
+
+   2) Type `make lib'.
+
+   3) Type `make test'.
+
+If anything goes wrong with the build process, double-check that your C
+compiler is ANSI-compliant (if you're trying to use "cc" under SunOS or
+Solaris, it isn't!).  If you're sure that everything is in working order
+at your end, feel free to email me.
+
+If any of the tests fail, *please* contact me and let me know.  It might
+be helpful to run the test program manually (switch into the "t"
+directory and run "simple_test"), as "make test" discards any error
+messages.
+
+If you're just doing this in order to build Text::BibTeX, you're done --
+go back to the Text::BibTeX README for further instructions.
+
+If you're building btparse for use in your own C programs, you might
+want to install it and/or build a shared library.  To install the
+library:
+
+   4) Edit Makefile.dirs to reflect your preferred installation location.
+
+   5) Type `make install'.
+
+`make install' will install the static library file (libbtparse.a), the
+header file that you need to include in your programs to use btparse
+(btparse.h), and the man pages from the "doc" directory.
+
+To build a shared library on a modern, ELF-based system such as Linux,
+IRIX 5+, or Solaris 2.x (?), just type `make shlib'.  If this doesn't
+work, you're on your own.  You're also on your own when it comes to
+installing the shared library; that's just too system dependent.
+
+
+DOCUMENTATION
+-------------
+
+In the "doc" directory you will find some rudimentary man pages covering
+btparse.  Even if you're not planning on using the library from C, you
+might be interested in the bt_language page, which covers the lexical
+and syntactic grammars that btparse uses to parse BibTeX.
+
+The documentation is written using the pod (plain ol' documentation)
+format, but *roff-ready versions are included with the distribution.
+These are the versions that will be installed by `make install'.
+
+If you have Perl 5 installed, you can use one of the pod converters
+supplied with it to read or print the documentation; try pod2text, pod2man,
+pod2html, or pod2latex.
+
+Otherwise, you can use nroff, troff, or groff to process the "man page"
+versions of the documentation.  For instance, "groff -Tps -man
+doc/bt_language.3" will produce a PostScript version of the "bt_language"
+entry, and "groff -Tascii -man doc/bt_language.3" will give you a text
+version.
+
+If you find the documentation useful and would like to see more, please
+let me know.
+
+
+EXAMPLE PROGRAMS
+----------------
+
+Included in the "progs" directory are two example programs, bibparse and
+biblex.  The former provides an example of a well-behaved, useful program
+based on btparse; by default, it reads a series of BibTeX files (named on
+the command line), parses them, and prints their data out in a form that is
+dead easy to parse in almost any language.  (I used this as a preliminary
+to the full-blown Text::BibTeX Perl module; to parse BibTeX data, I just
+opened a pipe reading the output of bibparse, and used simple Perl code to
+parse the data.)  bibparse uses GNU getopt, but I've included the necessary
+files with the distribution so you shouldn't have any problems building it.
+
+biblex is an example of what *not* to do; it rudely pokes into the
+internals of both the library and the PCCTS-generated lexical scanner on
+which it is based.  It prints out the stream of tokens in a BibTeX file
+according to my lexical grammar.  Do *not* use this program as an example!
+I found it useful in debugging the lexical analyzer and parser, and provide
+it solely for your amusement.
+
+Both of these programs are unsupported, under-commented, and
+undocumented (apart from the above paragraphs).  If you would like this
+to change, tell me about it -- if nobody except me is interested in
+them, then unsupported and undocumented they will remain.
+
+
+BUGS
+----
+
+There is one known bug that probably isn't going to be fixed any time
+soon: entries with a large number of fields (more than about 90, if each
+field value is just a single string) will cause the parser to crash.
+This is unavoidable due to the PCCTS-generated parser using
+statically-allocated stacks for attributes and abstract-syntax tree
+nodes.  I could increase the static allocation, but that would just
+decrease the likelihood of encountering the problem, not make it go
+away.  (Anyways, the only BibTeX file I've seen with anywhere near 90
+fields in an entry is part of the test suite distributed with bibclean.
+It's a long term goal to be able to handle this, but the design of PCCTS
+1.x makes it pretty difficult.)
+
+Any segmentation faults or bus errors from the library should be
+considered bugs.  They probably result from passing in bogus data, but I
+do make an attempt to catch all such mistakes, and if I've missed any
+I'd like to know about it.
+
+Any memory leaks from the library are also a concern; as long as you are
+conscientious about calling the cleanup functions (bt_free_ast() and
+bt_cleanup()), then the library shouldn't leak.
