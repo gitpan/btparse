@@ -8,7 +8,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/08, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: parse_auxiliary.h,v 1.3 1997/09/06 22:57:21 greg Rel $
+@VERSION    : $Id: parse_auxiliary.h,v 1.4 1998/03/29 19:48:28 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -27,5 +27,6 @@ void fix_token_names (void);
 void zzsyn (char *text, int tok, 
             char *egroup, SetWordType *eset, int etok,
             int k, char *bad_text);
+void  check_field_name (AST * field);
 
 #endif /* PARSE_AUXILIARY_H */

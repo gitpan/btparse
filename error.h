@@ -5,7 +5,7 @@
               library).
 @CREATED    : Summer 1996, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: error.h,v 1.9 1997/09/26 13:36:25 greg Rel $
+@VERSION    : $Id: error.h,v 1.10 1997/11/12 17:17:58 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -18,9 +18,27 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+#include <stdarg.h>
 #include "btparse.h"                    /* for AST typedef */
 
 #define MAX_ERROR 1024
+
+#define ERRFUNC_BODY(class,filename,line,item_desc,item,format)            \
+{                                                                          \
+   va_list  arglist;                                                       \
+                                                                           \
+   va_start (arglist, format);                                             \
+   report_error (class, filename, line, item_desc, item, format, arglist); \
+   va_end (arglist);                                                       \
+}
+
+#define GEN_ERRFUNC(name,params,class,filename,line,item_desc,item,format) \
+void name params                                                           \
+ERRFUNC_BODY (class, filename, line, item_desc, item, format)
+
+#define GEN_PRIVATE_ERRFUNC(name,params,                                  \
+                            class,filename,line,item_desc,item,format)    \
+static GEN_ERRFUNC(name,params,class,filename,line,item_desc,item,format)
 
 /*
  * Prototypes for functions exported by error.c but only used within
@@ -28,15 +46,20 @@
  * in btparse.h.
  */
 
+void print_error (bt_error *err);
+void report_error (bt_errclass class, 
+                   char * filename, int line, char * item_desc, int item,
+                   char * format, va_list arglist);
+
+void general_error (bt_errclass class,
+                    char * filename, int line, char * item_desc, int item,
+                    char * format, ...);
+void error (bt_errclass class, char * filename, int line, char * format, ...);
+void ast_error (bt_errclass class, AST * ast, char * format, ...);
+
 void notify (char *format,...);
-void content_warning (AST * ast, char *format,...);
-void name_warning (char *filename, int line, char *format, ...);
-void structural_warning (AST * ast, char *format,...);
-void lexical_warning (char *format,...);
-void usage_warning (char *format,...);
-void lexical_error (char *format,...);
-void syntax_error (char *format,...);
-void usage_error (char *format,...);
-void internal_error (char *format,...);
+void usage_warning (char * format, ...);
+void usage_error (char * format, ...);
+void internal_error (char * format, ...);
 
 #endif

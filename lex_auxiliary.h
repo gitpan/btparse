@@ -5,7 +5,7 @@
               are explicitly called from the lexer actions in bibtex.g.
 @CREATED    : Summer 1996, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: lex_auxiliary.h,v 1.11 1997/09/06 22:44:36 greg Rel $
+@VERSION    : $Id: lex_auxiliary.h,v 1.13 1997/11/27 15:01:28 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -47,7 +47,7 @@ void zzcopy (char **nextpos, char **lastpos, int *ovf_flag);
 #endif
 
 void initialize_lexer_state (void);
-bt_metatype_t entry_metatype (void);
+bt_metatype entry_metatype (void);
 
 void newline (void);
 void comment (void);
@@ -63,6 +63,8 @@ void start_string (char start_char);
 void end_string (char end_char);
 void open_brace (void);
 void close_brace (void);
+void lparen_in_string (void);
+void rparen_in_string (void);
 void quote_in_string (void);
 void check_runaway_string (void);
 

@@ -11,8 +11,8 @@
 #define zzEOF_TOKEN 1
 #define AT 2
 #define COMMENT 4
-#define NAME 9
-#define NUMBER 10
+#define NUMBER 9
+#define NAME 10
 #define LBRACE 11
 #define RBRACE 12
 #define ENTRY_OPEN 13
@@ -35,13 +35,13 @@ extern void entry();
 #endif
 
 #ifdef __STDC__
-void body(AST**_root, bt_metatype_t metatype );
+void body(AST**_root, bt_metatype metatype );
 #else
 extern void body();
 #endif
 
 #ifdef __STDC__
-void contents(AST**_root, bt_metatype_t metatype );
+void contents(AST**_root, bt_metatype metatype );
 #else
 extern void contents();
 #endif
@@ -74,6 +74,7 @@ extern void simple_value();
 extern SetWordType zzerr1[];
 extern SetWordType zzerr2[];
 extern SetWordType zzerr3[];
-extern SetWordType setwd1[];
 extern SetWordType zzerr4[];
+extern SetWordType setwd1[];
+extern SetWordType zzerr5[];
 extern SetWordType setwd2[];

@@ -18,6 +18,8 @@
 #include "lex_auxiliary.h"
 #include "error.h"
 #include "my_dmalloc.h"
+
+extern char * InputFilename;            /* for zzcr_ast call in pccts/ast.c */
 #define GENAST
 
 #include "ast.h"
@@ -86,7 +88,7 @@ AST **_root;
 	zzBLOCK(zztasp1);
 	zzMake0;
 	{
-	bt_metatype_t metatype;   
+	bt_metatype metatype;   
 	zzmatch(AT);  zzCONSUME;
 	zzmatch(NAME); zzsubroot(_root, &_sibling, &_tail);
 	
@@ -107,11 +109,11 @@ fail:
 
 void
 #ifdef __STDC__
-body(AST**_root, bt_metatype_t metatype )
+body(AST**_root, bt_metatype metatype )
 #else
 body(_root,metatype)
 AST **_root;
- bt_metatype_t metatype ;
+ bt_metatype metatype ;
 #endif
 {
 	zzRULE;
@@ -144,37 +146,50 @@ fail:
 
 void
 #ifdef __STDC__
-contents(AST**_root, bt_metatype_t metatype )
+contents(AST**_root, bt_metatype metatype )
 #else
 contents(_root,metatype)
 AST **_root;
- bt_metatype_t metatype ;
+ bt_metatype metatype ;
 #endif
 {
 	zzRULE;
 	zzBLOCK(zztasp1);
 	zzMake0;
 	{
-	if ( (LA(1)==NAME)&&(metatype == BTE_REGULAR /* || metatype == BTE_MODIFY */ ) ) {
+	if ( (setwd1[LA(1)]&0x8)&&(metatype == BTE_REGULAR /* || metatype == BTE_MODIFY */ ) ) {
 		if (!(metatype == BTE_REGULAR /* || metatype == BTE_MODIFY */ )) {zzfailed_pred("   metatype == BTE_REGULAR /* || metatype == BTE_MODIFY */ ");}
-		zzmatch(NAME); zzsubchild(_root, &_sibling, &_tail);
+		{
+			zzBLOCK(zztasp2);
+			zzMake0;
+			{
+			if ( (LA(1)==NAME) ) {
+				zzmatch(NAME); zzsubchild(_root, &_sibling, &_tail); zzCONSUME;
+			}
+			else {
+				if ( (LA(1)==NUMBER) ) {
+					zzmatch(NUMBER); zzsubchild(_root, &_sibling, &_tail); zzCONSUME;
+				}
+				else {zzFAIL(1,zzerr2,&zzMissSet,&zzMissText,&zzBadTok,&zzBadText,&zzErrk); goto fail;}
+			}
+			zzEXIT(zztasp2);
+			}
+		}
 		zzastArg(1)->nodetype = BTAST_KEY;   
- zzCONSUME;
-
 		zzmatch(COMMA);  zzCONSUME;
 		fields(zzSTR); zzlink(_root, &_sibling, &_tail);
 	}
 	else {
-		if ( (setwd1[LA(1)]&0x8)&&(metatype == BTE_MACRODEF ) ) {
+		if ( (setwd1[LA(1)]&0x10)&&(metatype == BTE_MACRODEF ) ) {
 			if (!(metatype == BTE_MACRODEF )) {zzfailed_pred("   metatype == BTE_MACRODEF ");}
 			fields(zzSTR); zzlink(_root, &_sibling, &_tail);
 		}
 		else {
-			if ( (setwd1[LA(1)]&0x10)&&(metatype == BTE_PREAMBLE ) ) {
+			if ( (setwd1[LA(1)]&0x20)&&(metatype == BTE_PREAMBLE ) ) {
 				if (!(metatype == BTE_PREAMBLE )) {zzfailed_pred("   metatype == BTE_PREAMBLE ");}
 				value(zzSTR); zzlink(_root, &_sibling, &_tail);
 			}
-			else {zzFAIL(1,zzerr2,&zzMissSet,&zzMissText,&zzBadTok,&zzBadText,&zzErrk); goto fail;}
+			else {zzFAIL(1,zzerr3,&zzMissSet,&zzMissText,&zzBadTok,&zzBadText,&zzErrk); goto fail;}
 		}
 	}
 	zzEXIT(zztasp1);
@@ -182,7 +197,7 @@ AST **_root;
 fail:
 	zzEXIT(zztasp1);
 	zzsyn(zzMissText, zzBadTok, (ANTLRChar *)"", zzMissSet, zzMissTok, zzErrk, zzBadText);
-	zzresynch(setwd1, 0x20);
+	zzresynch(setwd1, 0x40);
 	}
 }
 
@@ -215,14 +230,14 @@ AST **_root;
 	else {
 		if ( (LA(1)==ENTRY_CLOSE) ) {
 		}
-		else {zzFAIL(1,zzerr3,&zzMissSet,&zzMissText,&zzBadTok,&zzBadText,&zzErrk); goto fail;}
+		else {zzFAIL(1,zzerr4,&zzMissSet,&zzMissText,&zzBadTok,&zzBadText,&zzErrk); goto fail;}
 	}
 	zzEXIT(zztasp1);
 	return;
 fail:
 	zzEXIT(zztasp1);
 	zzsyn(zzMissText, zzBadTok, (ANTLRChar *)"", zzMissSet, zzMissTok, zzErrk, zzBadText);
-	zzresynch(setwd1, 0x40);
+	zzresynch(setwd1, 0x80);
 	}
 }
 
@@ -239,7 +254,7 @@ AST **_root;
 	zzMake0;
 	{
 	zzmatch(NAME); zzsubroot(_root, &_sibling, &_tail);
-	zzastArg(1)->nodetype = BTAST_FIELD;   
+	zzastArg(1)->nodetype = BTAST_FIELD; check_field_name (zzastArg(1));   
  zzCONSUME;
 
 	zzmatch(EQUALS);  zzCONSUME;
@@ -255,7 +270,7 @@ AST **_root;
 fail:
 	zzEXIT(zztasp1);
 	zzsyn(zzMissText, zzBadTok, (ANTLRChar *)"", zzMissSet, zzMissTok, zzErrk, zzBadText);
-	zzresynch(setwd1, 0x80);
+	zzresynch(setwd2, 0x1);
 	}
 }
 
@@ -289,7 +304,7 @@ AST **_root;
 fail:
 	zzEXIT(zztasp1);
 	zzsyn(zzMissText, zzBadTok, (ANTLRChar *)"", zzMissSet, zzMissTok, zzErrk, zzBadText);
-	zzresynch(setwd2, 0x1);
+	zzresynch(setwd2, 0x2);
 	}
 }
 
@@ -325,7 +340,7 @@ AST **_root;
  zzCONSUME;
 
 			}
-			else {zzFAIL(1,zzerr4,&zzMissSet,&zzMissText,&zzBadTok,&zzBadText,&zzErrk); goto fail;}
+			else {zzFAIL(1,zzerr5,&zzMissSet,&zzMissText,&zzBadTok,&zzBadText,&zzErrk); goto fail;}
 		}
 	}
 	zzEXIT(zztasp1);
@@ -333,6 +348,6 @@ AST **_root;
 fail:
 	zzEXIT(zztasp1);
 	zzsyn(zzMissText, zzBadTok, (ANTLRChar *)"", zzMissSet, zzMissTok, zzErrk, zzBadText);
-	zzresynch(setwd2, 0x2);
+	zzresynch(setwd2, 0x4);
 	}
 }

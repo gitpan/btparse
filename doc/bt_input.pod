@@ -33,21 +33,21 @@ converting it from raw text to abstract-syntax trees (ASTs).
 Set the string-processing options for a particular entry metatype.  This
 affects the entry post-processing done by C<bt_parse_entry_s()>,
 C<bt_parse_entry()>, and C<bt_parse_file()>.  If C<bt_set_stringopts()>
-is never called, the four metatypes default to the following string
-options:
+is never called, the four metatypes default to the following sets of
+string options:
 
-   BTE_REGULAR    BTO_DELQUOTES | BTO_EXPAND | BTO_PASTE | BTO_COLLAPSE
-   BTE_COMMENT    BTO_DELQUOTES
-   BTE_PREAMBLE   BTO_DELQUOTES
-   BTE_MACRODEF   BTO_DELQUOTES | BTO_EXPAND | BTO_PASTE
+   BTE_REGULAR    BTO_CONVERT | BTO_EXPAND | BTO_PASTE | BTO_COLLAPSE
+   BTE_COMMENT    0
+   BTE_PREAMBLE   0
+   BTE_MACRODEF   BTO_CONVERT | BTO_EXPAND | BTO_PASTE
 
 For example,
 
-   bt_set_stringopts (BTE_COMMENT, BTO_DELQUOTES | BTO_COLLAPSE);
+   bt_set_stringopts (BTE_COMMENT, BTO_COLLAPSE);
 
-will cause the library both to delete quotes and to collapse whitespace
-in the value from all comment entries; the AST returned by one of the
-C<bt_parse_*> functions will reflect this change.
+will cause the library to collapse whitespace in the value from all
+comment entries; the AST returned by one of the C<bt_parse_*> functions
+will reflect this change.
 
 =item bt_parse_entry ()
 
@@ -133,7 +133,7 @@ Thus, C<bt_parse_entry_s()> is usually used like this:
 
    while (entry_text = get_more_text ())
    {
-      entry_ast = bt_parse_entry (entry_text, NULL, 1, options, &ok);
+      entry_ast = bt_parse_entry_s (entry_text, NULL, 1, options, &ok);
       if (ok)
       {
          /* ... process entry ... */
@@ -142,8 +142,8 @@ Thus, C<bt_parse_entry_s()> is usually used like this:
 
    bt_parse_entry_s (NULL, NULL, 1, options, NULL);    /* cleanup */
 
-assuming that C<get_more_text()> does as its name implies, and returns
-C<NULL> when there's no more text available.
+assuming that C<get_more_text()> returns a pointer to the text of an
+entry to parse, or C<NULL> if there's no more text available.
 
 =item bt_parse_file ()
 
@@ -163,4 +163,5 @@ Returns a pointer to a linked list of ASTs representing the entries in the
 file, or C<NULL> if no entries were found in the file.  This list can
 be traversed with C<bt_next_entry()>, and the individual entries then
 traversed as usual (see L<bt_traversal>).
+
 =back

@@ -6,7 +6,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/12, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: macros.c,v 1.11 1997/10/21 01:40:26 greg Rel $
+@VERSION    : $Id: macros.c,v 1.17 1998/03/11 16:19:33 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -22,8 +22,8 @@
 #include "prototypes.h"
 #include "error.h"
 #include "my_dmalloc.h"
+#include "bt_debug.h"
 
-#define DEBUG 0
 #define NUM_MACROS 547
 #define STRING_SIZE 4096
 
@@ -31,47 +31,121 @@ Sym *AllMacros = NULL;                  /* `scope' so we can get back list */
                                         /* of all macros when done */
 
 
-void init_macros (void)
+GEN_PRIVATE_ERRFUNC (macro_warning,
+                     (char * filename, int line, char * fmt, ...),
+                     BTERR_CONTENT, filename, line, NULL, -1, fmt)
+
+
+/* ------------------------------------------------------------------------
+@NAME       : init_macros()
+@INPUT      : 
+@OUTPUT     : 
+@RETURNS    : 
+@DESCRIPTION: Initializes the symbol table used to store macro values.
+@GLOBALS    : AllMacros
+@CALLS      : zzs_init(), zzs_scope() (sym.c)
+@CALLERS    : bt_initialize() (init.c)
+@CREATED    : Jan 1997, GPW
+-------------------------------------------------------------------------- */
+void
+init_macros (void)
 {
    zzs_init (NUM_MACROS, STRING_SIZE);
    zzs_scope (&AllMacros);
 }
 
 
-void done_macros (void)
+/* ------------------------------------------------------------------------
+@NAME       : done_macros()
+@INPUT      : 
+@OUTPUT     : 
+@RETURNS    : 
+@DESCRIPTION: Frees up all the macro values in the symbol table, and 
+              then frees up the symbol table itself.
+@GLOBALS    : AllMacros
+@CALLS      : zzs_rmscope(), zzs_done()
+@CALLERS    : bt_cleanup() (init.c)
+@CREATED    : Jan 1997, GPW
+-------------------------------------------------------------------------- */
+void
+done_macros (void)
 {
-   Sym  *cur, *next;
-
-   /* 
-    * Use the current `scope' (same one for all macros) to get access to
-    * a linked list of all macros.  Then traverse the list, free()'ing
-    * both the text (which was strdup()'d in add_macro(), below) and 
-    * the records themselves (which are calloc()'d by zzs_new()).
-    */
-
-   cur = zzs_rmscope (&AllMacros);
-   while (cur != NULL)
-   {
-#if DEBUG > 1
-      printf ("done_macros(): freeing macro \"%s\" (%p=\"%s\") at %p\n",
-              cur->symbol, cur->text, cur->text, cur);
-#endif
-
-      next = cur->scope;
-      if (cur->text != NULL) free (cur->text);
-      free (cur);
-      cur = next;
-   }
-   
+   bt_delete_all_macros ();
    zzs_done ();
 }
 
 
-void add_macro (AST *assignment, ushort options)
+static void
+delete_macro_entry (Sym * sym)
 {
-   Sym   *new_rec;
-   AST   *value;
-   char  *macro, *text;
+   Sym * cur;
+   Sym * prev;
+
+   /* 
+    * Yechh!  All this mucking about with the scope list really
+    * ought to be handled by the symbol table code.  Must write
+    * my own someday.
+    */
+
+   /* Find this entry in the list of all macro table entries */
+   cur = AllMacros;
+   prev = NULL;
+   while (cur != NULL && cur != sym)
+   {
+      prev = cur;
+      cur = cur->scope;
+   }
+
+   if (cur == NULL)                     /* uh-oh -- wasn't found! */
+   {
+      internal_error ("macro table entry for \"%s\" not found in scope list",
+                      sym->symbol);
+   }
+
+   /* Now unlink from the "scope" list */
+   if (prev == NULL)                    /* it's the head of the list */
+      AllMacros = cur->scope;
+   else
+      prev->scope = cur->scope;
+
+   /* Remove it from the macro hash table */
+   zzs_del (sym);
+
+   /* And finally, free up the entry's text and the entry itself */
+   if (sym->text) free (sym->text);
+   free (sym);
+} /* delete_macro_entry() */
+
+
+/* ------------------------------------------------------------------------
+@NAME       : bt_add_macro_value()
+@INPUT      : assignment - AST node representing "macro = value"
+              options    - string-processing options that were used to
+                           process this string after parsing
+@OUTPUT     : 
+@RETURNS    : 
+@DESCRIPTION: Adds a value to the symbol table used for macros.
+
+              If the value was not already post-processed as a macro value
+              (expand macros, paste substrings, but don't collapse 
+              whitespace), then this post-processing is done before adding
+              the macro text to the table.
+
+              If the macro is already defined, a warning is printed and
+              the old text is overridden.
+@GLOBALS    : 
+@CALLS      : bt_add_macro_text()
+              bt_postprocess_field()
+@CALLERS    : bt_postprocess_entry() (post_parse.c)
+@CREATED    : Jan 1997, GPW
+-------------------------------------------------------------------------- */
+void
+bt_add_macro_value (AST *assignment, ushort options)
+{
+   AST *   value;
+   char *  macro;
+   char *  text;
+   boolean free_text;
 
    if (assignment == NULL || assignment->down == NULL) return;
    value = assignment->down;
@@ -83,7 +157,9 @@ void add_macro (AST *assignment, ushort options)
 
    if ((options & BTO_STRINGMASK) != BTO_MACRO)
    {
-      text = postprocess_field (assignment, BTO_MACRO, FALSE);
+      text = bt_postprocess_field (assignment, BTO_MACRO, FALSE);
+      free_text = TRUE;                 /* because it's alloc'd by */
+                                        /* bt_postprocess_field() */
    }
    else
    {
@@ -99,43 +175,142 @@ void add_macro (AST *assignment, ushort options)
       }
 
       text = assignment->down->text;
-      if (text != NULL)
-         text = strdup (text);          /* so the AST and macro hash can */
-                                        /* free() the text independently */
+      free_text = FALSE;
    }
 
    macro = assignment->text;
+   bt_add_macro_text (macro, text, assignment->filename, assignment->line);
+   if (free_text && text != NULL)
+      free (text);
+
+} /* bt_add_macro_value() */
+
+
+/* ------------------------------------------------------------------------
+@NAME       : bt_add_macro_text()
+@INPUT      : macro - the name of the macro to define
+              text  - the macro text
+              filename, line - where the macro is defined; pass NULL
+                for filename if no file, 0 for line if no line number
+                (just used to generate warning message)
+@OUTPUT     : 
+@RETURNS    : 
+@DESCRIPTION: Sets the text value for a macro.  If the macro is already
+              defined, a warning is printed and the old value is overridden.
+@GLOBALS    : 
+@CALLS      : zzs_get(), zzs_newadd()
+@CALLERS    : bt_add_macro_value()
+              (exported from library)
+@CREATED    : 1997/11/13, GPW (from code in bt_add_macro_value())
+@MODIFIED   : 
+-------------------------------------------------------------------------- */
+void
+bt_add_macro_text (char * macro, char * text, char * filename, int line)
+{
+   Sym * sym;
+   Sym * new_rec;
 
 #if DEBUG == 1
    printf ("adding macro \"%s\" = \"%s\"\n", macro, text);
-#elif DEBUG > 1
+#elif DEBUG >= 2
    printf ("add_macro: macro = %p (%s)\n"
            "            text = %p (%s)\n",
            macro, macro, text, text);
 #endif
 
-   if (zzs_get (macro))
+   if ((sym = zzs_get (macro)))
    {
-      content_warning (assignment, 
-                       "overriding existing definition of macro \"%s\"", 
-                       macro);
+      macro_warning (filename, line,
+                     "overriding existing definition of macro \"%s\"", 
+                     macro);
+      delete_macro_entry (sym);
    }
 
    new_rec = zzs_newadd (macro);
-   new_rec->text = text;
-#if DEBUG > 1
-   printf ("           saved = %p (%s)\n", new_rec->text, new_rec->text);
-#endif
+   new_rec->text = (text != NULL) ? strdup (text) : NULL;
+   DBG_ACTION
+      (2, printf ("           saved = %p (%s)\n",
+                  new_rec->text, new_rec->text);)
+
+} /* bt_add_macro_text() */
+
+
+/* ------------------------------------------------------------------------
+@NAME       : bt_delete_macro()
+@INPUT      : macro - name of macro to delete
+@DESCRIPTION: Deletes a macro from the macro table.
+@CALLS      : zzs_get()
+@CALLERS    : 
+@CREATED    : 1998/03/01, GPW
+@MODIFIED   : 
+-------------------------------------------------------------------------- */
+void
+bt_delete_macro (char * macro)
+{
+   Sym * sym;
+
+   sym = zzs_get (macro);
+   if (! sym) return;
+   delete_macro_entry (sym);
 }
 
 
-int macro_length (char *macro)
+/* ------------------------------------------------------------------------
+@NAME       : bt_delete_all_macros()
+@DESCRIPTION: Deletes all macros from the macro table.
+@CALLS      : zzs_rmscore()
+@CALLERS    : 
+@CREATED    : 1998/03/01, GPW
+@MODIFIED   : 
+-------------------------------------------------------------------------- */
+void
+bt_delete_all_macros (void)
+{
+   Sym  *cur, *next;
+
+   DBG_ACTION (2, printf ("bt_delete_all_macros():\n");)
+
+   /* 
+    * Use the current `scope' (same one for all macros) to get access to
+    * a linked list of all macros.  Then traverse the list, free()'ing
+    * both the text (which was strdup()'d in add_macro(), below) and 
+    * the records themselves (which are calloc()'d by zzs_new()).
+    */
+
+   cur = zzs_rmscope (&AllMacros);
+   while (cur != NULL)
+   {
+      DBG_ACTION
+         (2, printf ("  freeing macro \"%s\" (%p=\"%s\") at %p\n",
+                     cur->symbol, cur->text, cur->text, cur);)
+
+      next = cur->scope;
+      if (cur->text != NULL) free (cur->text);
+      free (cur);
+      cur = next;
+   }
+}
+
+
+/* ------------------------------------------------------------------------
+@NAME       : bt_macro_length()
+@INPUT      : macro - the macro name
+@OUTPUT     : 
+@RETURNS    : length of the macro's text, or zero if the macro is undefined
+@DESCRIPTION: Returns length of a macro's text.
+@GLOBALS    : 
+@CALLS      : zzs_get()
+@CALLERS    : bt_postprocess_value()
+              (exported from library)
+@CREATED    : Jan 1997, GPW
+-------------------------------------------------------------------------- */
+int
+bt_macro_length (char *macro)
 {
    Sym   *sym;
 
-#if DEBUG > 1
-   printf ("macro_length: looking up \"%s\"\n", macro);
-#endif
+   DBG_ACTION
+      (2, printf ("bt_macro_length: looking up \"%s\"\n", macro);)
 
    sym = zzs_get (macro);
    if (sym)
@@ -145,16 +320,31 @@ int macro_length (char *macro)
 }
 
 
-char *macro_text (AST *macro_use)
+/* ------------------------------------------------------------------------
+@NAME       : bt_macro_text()
+@INPUT      : macro - the macro name
+              filename, line - where the macro was invoked; NULL for
+                `filename' and zero for `line' if not applicable
+@OUTPUT     : 
+@RETURNS    : The text of the macro, or NULL if it's undefined. 
+@DESCRIPTION: Fetches a macros text; prints warning and returns NULL if 
+              macro is undefined.
+@CALLS      : zzs_get()
+@CALLERS    : bt_postprocess_value()
+@CREATED    : Jan 1997, GPW
+-------------------------------------------------------------------------- */
+char *
+bt_macro_text (char * macro, char * filename, int line)
 {
-   char  *macro;
-   Sym   *sym;
+   Sym *  sym;
 
-   macro = macro_use->text;
+   DBG_ACTION
+      (2, printf ("bt_macro_text: looking up \"%s\"\n", macro);)
+
    sym = zzs_get (macro);
    if (!sym)
    {
-      content_warning (macro_use, "undefined macro \"%s\"", macro);
+      macro_warning (filename, line, "undefined macro \"%s\"", macro);
       return NULL;
    }
 

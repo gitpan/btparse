@@ -13,7 +13,7 @@
 @CALLERS    : 
 @CREATED    : 1997/07/29, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: simple_test.c,v 1.9 1997/10/05 18:28:59 greg Rel $
+@VERSION    : $Id: simple_test.c,v 1.11 1998/03/03 01:25:55 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part
@@ -42,7 +42,7 @@ typedef struct
    char **fields;
    int    num_values;
    char **values;
-   bt_nodetype_t * ntypes;
+   bt_nodetype * ntypes;
 } test_data;
 
 typedef boolean (*tester) (AST *, test_data *);
@@ -74,10 +74,10 @@ char * regular_values[] =
   { "A ", "Book", "  John Q.  Random", "junk", "Foo Bar \\& Sons", "1922" };
 char * regular_values_proc[] = 
   { "A Book", "John Q. Random", "Foo Bar \\& Sons", "1922" };
-bt_nodetype_t regular_ntypes[] = 
+bt_nodetype regular_ntypes[] = 
   { BTAST_STRING, BTAST_STRING, BTAST_STRING, BTAST_MACRO, BTAST_STRING, BTAST_NUMBER };
-bt_nodetype_t regular_ntypes_proc[] = 
-  { BTAST_STRING, BTAST_STRING, BTAST_STRING, BTAST_NUMBER };
+bt_nodetype regular_ntypes_proc[] = 
+  { BTAST_STRING, BTAST_STRING, BTAST_STRING, BTAST_STRING };
 
 /* likewise for "macro.bib" */
 char * macro_macros[] = { "macro", "foo" };
@@ -85,7 +85,7 @@ char * macro_values[] =
   { "macro  text ", "blah blah  ", " ding dong " };
 char * macro_values_proc[] = 
   { "macro text", "blah blah ding dong" };
-bt_nodetype_t macro_ntypes[] = { BTAST_STRING, BTAST_STRING, BTAST_STRING };
+bt_nodetype macro_ntypes[] = { BTAST_STRING, BTAST_STRING, BTAST_STRING };
 
 /* and for "comment.bib" */
 char * comment_value = "this is a comment entry, anything at all can go in it (as long          as parentheses are balanced), even {braces}";
@@ -332,7 +332,7 @@ boolean goodtest_regular (AST * entry, test_data * data)
    AST *   value;
    char *  field_name;
    char *  value_text;
-   bt_nodetype_t
+   bt_nodetype
            value_nodetype;
    int     field_num;
    int     value_num;
@@ -374,7 +374,7 @@ boolean goodtest_macro (AST * entry, test_data * data)
    AST *   value;
    char *  macro_name;
    char *  value_text;
-   bt_nodetype_t
+   bt_nodetype
            value_nodetype;
    int     macro_num;
    int     value_num;
@@ -430,7 +430,7 @@ boolean goodtest_preamble (AST * entry, test_data * data)
    boolean ok = TRUE;
    AST *   value;
    char *  value_text;
-   bt_nodetype_t
+   bt_nodetype
            value_nodetype;
    int     value_num;
 

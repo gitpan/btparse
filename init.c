@@ -5,7 +5,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/19, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: init.c,v 1.6 1997/09/07 02:36:28 greg Rel $
+@VERSION    : $Id: init.c,v 1.7 1998/04/03 03:40:25 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -17,6 +17,7 @@
 
 #include "bt_config.h"
 #include "stdpccts.h"                   /* for zzfree_ast() prototype */
+#include "parse_auxiliary.h"            /* for fix_token_names() proto */
 #include "prototypes.h"                 /* for other prototypes */
 #include "my_dmalloc.h"
 

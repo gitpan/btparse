@@ -4,11 +4,16 @@
 @OUTPUT     : 
 @RETURNS    : 
 @DESCRIPTION: Prototype declarations for functions from various places.
+              Only functions that are private to the library (but shared
+              between files within the library) are declared here.  
+              Functions that are "exported from" the library (ie. usable
+              by and expected to be used by library user) are declared in
+              btparse.h.              
 @GLOBALS    : 
 @CALLS      : 
-@CREATED    : 1997/10/12, Greg Ward
+@CREATED    : 1997/01/12, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: prototypes.h,v 1.8 1997/09/06 22:57:22 greg Rel $
+@VERSION    : $Id: prototypes.h,v 1.13 1999/03/12 01:44:53 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -32,25 +37,9 @@ char *strlwr (char *s);
 char *strupr (char *s);
 #endif
 
-/* parse_auxiliary.c */
-void  fix_token_names (void);
-void show_stack (char *label);           /* for debugging */
-
-/* post_parse.c */
-void  postprocess_string (char *s,
-                          int   collapse_whitespace,
-                          int   delete_quotes,
-                          int   convert_quotes);
-char *postprocess_value (AST *field, ushort options, int replace);
-char *postprocess_field (AST *field, ushort options, int replace);
-void  postprocess_entry (AST *top, ushort options);
-
 /* macros.c */
 void  init_macros (void);
 void  done_macros (void);
-void  add_macro (AST *macrodef, ushort options);
-int   macro_length (char *macro);
-char *macro_text (AST *macro_use);
 
 /* bibtex_ast.c */
 void dump_ast (char *msg, AST *root);

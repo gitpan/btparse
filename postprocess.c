@@ -1,12 +1,12 @@
 /* ------------------------------------------------------------------------
-@NAME       : post_parse.c
+@NAME       : postprocess.c
 @DESCRIPTION: Operations applied to the AST (or strings in it) after 
               parsing is complete.
 @GLOBALS    : 
 @CALLS      : 
 @CREATED    : 1997/01/12, Greg Ward (from code in bibparse.c, lex_auxiliary.c)
 @MODIFIED   : 
-@VERSION    : $Id: post_parse.c,v 1.17 1997/09/10 02:02:07 greg Rel $
+@VERSION    : $Id: postprocess.c,v 1.22 1998/03/14 15:53:34 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -29,96 +29,65 @@
 
 
 /* ------------------------------------------------------------------------
-@NAME       : postprocess_string ()
+@NAME       : bt_postprocess_string ()
 @INPUT      : s
               collapse_whitespace
-              delete_quotes
-              convert_quotes
 @OUTPUT     : s (modified in place according to the flags)
 @RETURNS    : (void)
 @DESCRIPTION: Make a pass over string s (which is modified in-place) to
               do some subset of the following operations:
                  * collapse whitespace according to BibTeX rules
-                 * delete quotation characters
-                 * convert all quotes to curly braces
 
               (All are optional, and controlled by the obviously-named flag
               parameters.)
 
               Rules for collapsing whitespace are:
-                 * whitespace at beginning/end of string (just inside
-                   quotes if string is quoted) is deleted
+                 * whitespace at beginning/end of string is deleted
                  * within the string, each whitespace sequence is replaced by
                    a single space
 
               Note that part of the work is done by the lexer proper,
               namely conversion of tabs and newlines to spaces.
-
-              If the string is quoted (starts/ends with "" or {}) we also
-              verify that the opening and closing quote characters match.
 @GLOBALS    : 
 @CALLS      : 
 @CREATED    : originally in lex_auxiliary.c; moved here 1997/01/12
 @MODIFIED   : 
+@COMMENTS   : this only collapses whitespace now -- rename it???
 -------------------------------------------------------------------------- */
 void 
-postprocess_string (char *  s,
-                    boolean collapse_whitespace,
-                    boolean delete_quotes,
-                    boolean convert_quotes)
+bt_postprocess_string (char * s, ushort options)
 {
+   boolean collapse_whitespace;
    char *i, *j;
-   boolean   quoted;                    /* is the string already quoted? */
    int   len;
 
+   if (s == NULL) return;               /* quit if no string supplied */
+
 #if DEBUG > 1
-   printf ("postprocess_string: looking at >%s<\n", s);
+   printf ("bt_postprocess_string: looking at >%s<\n", s);
 #endif
+
+   /* Extract any relevant options (just one currently) to local flags. */
+
+   collapse_whitespace = options & BTO_COLLAPSE;
+
 
    /* First, assert the assumptions about s. */
 
    len = strlen (s);
-   quoted = (s[0] == '"' || s[0] == '{') &&       /* quote char at start... */
-            (s[len-1] == '"' || s[len-1] == '}'); /* ...and at the end */
-
-
-   /* Now check that the quote characters match up */
-
-   if (quoted &&
-       ! ((s[0] == '"' && s[len-1] == '"') ||
-          (s[0] == '{' && s[len-1] == '}')))
-   {
-      lexical_error ("token mismatch: string started with %c, " 
-                     "but ended with %c",
-                     s[0], s[len-1]);
-   }
-
-   if (quoted && !delete_quotes && convert_quotes && s[0] == '"')
-   {
-      s[    0] = '{';
-      s[len-1] = '}';
-   }
-
 
    /*
     * N.B. i and j will both point into s; j is always >= i, and
     * we copy characters from j to i.  Whitespace is collapsed/deleted
     * by advancing j without advancing i.
-    *
-    * Initial conditions for i and j:
-    *   - copy from first `interesting' character (after the opening
-    *     quote if quoted, else first character)
-    *   - copy to after the opening quote if quoted and we're not deleting
-    *     quotes, else copy to the first char
     */
 
-   j = (quoted) ? (s+1) : s;
-   i = (quoted && !delete_quotes) ? (s+1) : s;
+   i = j = s;                           /* start both at beginning of string */
 
 
    /*
     * If we're supposed to collapse whitespace, then advance j to the
-    * first non-space character (apart from any opening quote).
+    * first non-space character.
     */
 
    if (collapse_whitespace)
@@ -150,21 +119,13 @@ postprocess_string (char *  s,
    *i = (char) 0;                       /* ensure string is terminated */
 
 
-   /* Now, delete the closing quote (if appropriate) */
-
-   len = strlen (s);
-   if (quoted && delete_quotes)
-   {
-      s[--len] = (char) 0;
-   }
-
-
    /*
-    * And mop up whitespace (if any) preceding closing quote -- note that
-    * if there was any whitespace there, it has already been collapsed to
-    * exactly one space.
+    * And mop up whitespace (if any) at end of string -- note that if there
+    * was any whitespace there, it has already been collapsed to exactly
+    * one space.
     */
 
+   len = strlen (s);
    if (collapse_whitespace && s[len-1] == ' ')
    {
       s[--len] = (char) 0;
@@ -174,11 +135,11 @@ postprocess_string (char *  s,
    printf ("                transformed to >%s<\n", s);
 #endif
 
-} /* postprocess_string */
+} /* bt_postprocess_string */
 
 
 /* ------------------------------------------------------------------------
-@NAME       : postprocess_value()
+@NAME       : bt_postprocess_value()
 @INPUT      : 
 @OUTPUT     : 
 @RETURNS    : 
@@ -196,9 +157,9 @@ postprocess_string (char *  s,
               data: one to postprocess individual strings and accumulate
               the one big string, and a second to postprocess the big
               string.  In the first pass, the caller-supplied 'options'
-              variable is largely ignored; we will always delete quotes and
-              never collapse whitespace in the individual strings.  The
-              caller's wishes are respected when we make a post-processing
+              variable is largely ignored; we will never collapse
+              whitespace in the individual strings.  The caller's wishes
+              are fully respected when we make the final post-processing
               pass over the concatenation of the individual strings,
               though.
 
@@ -221,22 +182,29 @@ postprocess_string (char *  s,
 @GLOBALS    : 
 @CALLS      : 
 @CREATED    : 1997/01/10, GPW
-@MODIFIED   : 1997/08/25, GPW: renamed from postprocess_field(), and changed
+@MODIFIED   : 1997/08/25, GPW: renamed from bt_postprocess_field(), and changed
                                to take the head of a list of simple values,
                                rather than the parent of that list
 -------------------------------------------------------------------------- */
-char *postprocess_value (AST *value, ushort options, boolean replace)
+char *
+bt_postprocess_value (AST * value, ushort options, boolean replace)
 {
-   AST *   svalue;                      /* current simple value */
+   AST *   simple_value;                /* current simple value */
    boolean pasting;
-   boolean collapse_whitespace;
-   boolean delete_quotes;
+   ushort  string_opts;                 /* what to do to individual strings */
    int     tot_len;                     /* total length of pasted string */
    char *  new_string;                  /* in case of string pasting */
    char *  tmp_string;
    boolean free_tmp;                    /* should we free() tmp_string? */
 
    if (value == NULL) return NULL;
+   if (value->nodetype != BTAST_STRING &&
+       value->nodetype != BTAST_NUMBER &&
+       value->nodetype != BTAST_MACRO)
+   {
+      usage_error ("bt_postprocess_value: invalid AST node (not a value)");
+   }
+      
 
    /* 
     * We will paste strings iff the user wants us to, and there are at least
@@ -247,8 +215,8 @@ char *postprocess_value (AST *value, ushort options, boolean replace)
 
    /* 
     * If we're to concatenate (paste) sub-strings, we need to know the
-    * total length of them.  (The total length includes whitespace and 
-    * quotes, even though we might delete quotes.  Better safe than sorry.)
+    * total length of them.  So make a pass over all the sub-strings
+    * (simple values), adding up their lengths.
     */
 
    tot_len = 0;                         /* these are out here to keep */
@@ -257,56 +225,64 @@ char *postprocess_value (AST *value, ushort options, boolean replace)
 
    if (pasting)
    {
-      svalue = value;
-      while (svalue)
+      simple_value = value;
+      while (simple_value)
       {
-         switch (svalue->nodetype)
+         switch (simple_value->nodetype)
          {
             case BTAST_MACRO:
-               tot_len += macro_length (svalue->text);
+               tot_len += bt_macro_length (simple_value->text);
                break;
             case BTAST_STRING:
-               tot_len += (svalue->text) ? (strlen (svalue->text)) : 0;
+               tot_len += (simple_value->text) 
+                  ? (strlen (simple_value->text)) : 0;
                break;
             case BTAST_NUMBER:
-               tot_len += (svalue->text) ? (strlen (svalue->text)) : 0;
+               tot_len += (simple_value->text)
+                  ? (strlen (simple_value->text)) : 0;
                break;
             default:
                internal_error ("simple value has bad nodetype (%d)",
-                               (int) svalue->nodetype);
+                               (int) simple_value->nodetype);
          }
-         svalue = svalue->right;
+         simple_value = simple_value->right;
       }
 
       /* Now allocate the buffer in which we'll accumulate the whole string */
 
-      tot_len += 2;             /* quotes for the concatenated string */
       new_string = (char *) calloc (tot_len+1, sizeof (char));
-      if (! (options & BTO_DELQUOTES))
-         new_string[0] = '{';
    }
 
 
    /* 
     * Before entering the main loop, figure out just what
-    * postprocess_string() is supposed to do -- eg. if pasting strings,
-    * we should delete quotes but not (yet) collapse whitespace.
+    * bt_postprocess_string() is supposed to do -- eg. if pasting strings,
+    * we should not (yet) collapse whitespace.  (That'll be done on the
+    * final, concatenated string -- assuming the caller put BTO_COLLAPSE in
+    * the options bitmap.)
     */
 
    if (pasting)
    {
-      collapse_whitespace = FALSE;
-      delete_quotes = TRUE;
+      string_opts = options & ~BTO_COLLAPSE;     /* turn off collapsing */
    }
    else
    {
-      collapse_whitespace = options & BTO_COLLAPSE;
-      delete_quotes = options & BTO_DELQUOTES;
+      string_opts = options;            /* leave it alone */
    }
 
-   if (pasting && ! (options & BTO_EXPAND))
+   /*
+    * Sanity check: if we continue blindly on, we might stupidly
+    * concatenate a macro name and a literal string.  So check for that.
+    * Converting numbers is superficial, but requiring that it be done
+    * keeps people honest.
+    */
+
+   if (pasting && ! (options & (BTO_CONVERT|BTO_EXPAND)))
    {
-      internal_error ("can't paste strings without expanding macros");
+      usage_error ("bt_postprocess_value(): "
+                   "must convert numbers and expand macros " 
+                   "when pasting substrings");
    }
 
    /*
@@ -314,56 +290,85 @@ char *postprocess_value (AST *value, ushort options, boolean replace)
     * new_string.
     */
 
-   svalue = value;
-   while (svalue)
+   simple_value = value;
+   while (simple_value)
    {
       tmp_string = NULL;
       free_tmp = FALSE;
 
-      if (svalue->nodetype == BTAST_MACRO && (options & BTO_EXPAND))
+      /* 
+       * If this simple value is a macro and we're supposed to expand
+       * macros, then do so.  We also have to post-process the string
+       * returned from the macro table, because they're stored there
+       * without whitespace collapsed; if we're supposed to be doing that
+       * to the current value (and we're not pasting), this is where it
+       * will get done.
+       */
+      if (simple_value->nodetype == BTAST_MACRO && (options & BTO_EXPAND))
       {
-         tmp_string = macro_text (svalue);
+         tmp_string = bt_macro_text (simple_value->text, 
+                                     simple_value->filename,
+                                     simple_value->line);
          if (tmp_string != NULL)
          {
             tmp_string = strdup (tmp_string);
             free_tmp = TRUE;
-            postprocess_string (tmp_string, 
-                                collapse_whitespace,
-                                delete_quotes,
-                                0);
+            bt_postprocess_string (tmp_string, string_opts);
          }
 
          if (replace)
          {
-            svalue->nodetype = BTAST_STRING;
-            if (svalue->text)
-               free (svalue->text);
-            svalue->text = tmp_string;
+            simple_value->nodetype = BTAST_STRING;
+            if (simple_value->text)
+               free (simple_value->text);
+            simple_value->text = tmp_string;
             free_tmp = FALSE;           /* mustn't free, it's now in the AST */
          }
       }
 
-      else if (svalue->nodetype == BTAST_STRING && svalue->text)
+      /* 
+       * If the current simple value is a literal string, then just 
+       * post-process it.  This will be done in-place if 'replace' is
+       * true, otherwise a copy of the string will be post-processed.
+       */
+      else if (simple_value->nodetype == BTAST_STRING && simple_value->text)
       {
          if (replace)
          {
-            tmp_string = svalue->text;
+            tmp_string = simple_value->text;
          }
          else
          {
-            tmp_string = strdup (svalue->text);
+            tmp_string = strdup (simple_value->text);
             free_tmp = TRUE;
          }
 
-         postprocess_string (tmp_string, 
-                             collapse_whitespace,
-                             delete_quotes,
-                             0);
+         bt_postprocess_string (tmp_string, string_opts);
       }
 
-      if (svalue->nodetype == BTAST_NUMBER && svalue->text)
+      /*
+       * Finally, if the current simple value is a number, change it to a
+       * string (depending on options) and get its value.  We generally
+       * treat strings as numbers as equivalent, except of course numbers
+       * aren't post-processed -- there can't be any whitespace in them!
+       * The BTO_CONVERT option is mainly a sop to my strong-typing
+       * tendencies.
+       */
+      if (simple_value->nodetype == BTAST_NUMBER)
       {
-         tmp_string = svalue->text;
+         if (replace && (options & BTO_CONVERT))
+            simple_value->nodetype = BTAST_STRING;
+
+         if (simple_value->text)
+         {
+            if (replace)
+               tmp_string = simple_value->text;
+            else
+            {
+               tmp_string = strdup (simple_value->text);
+               free_tmp = TRUE;
+            }
+         }
       }
 
       if (pasting)
@@ -389,7 +394,7 @@ char *postprocess_value (AST *value, ushort options, boolean replace)
          new_string = (tmp_string != NULL) ? tmp_string : strdup ("");
       }
 
-      svalue = svalue->right;
+      simple_value = simple_value->right;
    }
 
    if (pasting)
@@ -397,17 +402,9 @@ char *postprocess_value (AST *value, ushort options, boolean replace)
       int    len;
 
       len = strlen (new_string);
-      if (! (options & BTO_DELQUOTES))
-      {
-         new_string[len++] = '}';
-         new_string[len] = (char) 0;
-      }
       assert (len <= tot_len);          /* hope we alloc'd enough! */
 
-      postprocess_string (new_string,
-                          options & BTO_COLLAPSE,
-                          options & BTO_DELQUOTES,
-                          0);
+      bt_postprocess_string (new_string, options);
 
       /* 
        * If replacing data in the AST, delete all but first child of
@@ -416,7 +413,7 @@ char *postprocess_value (AST *value, ushort options, boolean replace)
 
       if (replace)
       {
-         assert (value->right != NULL); /* there has to be > 1 svalue! */
+         assert (value->right != NULL); /* there has to be > 1 simple value! */
          zzfree_ast (value->right);     /* free from second simple value on */
          value->right = NULL;           /* remind ourselves they're gone */
          if (value->text)               /* free text of first simple value */
@@ -427,11 +424,11 @@ char *postprocess_value (AST *value, ushort options, boolean replace)
 
    return new_string;
    
-} /* postprocess_value() */
+} /* bt_postprocess_value() */
 
 
 /* ------------------------------------------------------------------------
-@NAME       : postprocess_field()
+@NAME       : bt_postprocess_field()
 @INPUT      : 
 @OUTPUT     : 
 @RETURNS    : 
@@ -439,28 +436,29 @@ char *postprocess_value (AST *value, ushort options, boolean replace)
               assignment subtree.  Just checks that 'field' does indeed
               point to an BTAST_FIELD node (presumably the parent of a list
               of simple values), downcases the field name, and calls
-              postprocess_value() on the value.
+              bt_postprocess_value() on the value.
 @GLOBALS    : 
 @CALLS      : 
 @CALLERS    : 
 @CREATED    : 1997/08/25, GPW
 @MODIFIED   : 
 -------------------------------------------------------------------------- */
-char *postprocess_field (AST *field, ushort options, boolean replace)
+char *
+bt_postprocess_field (AST * field, ushort options, boolean replace)
 {
    if (field == NULL) return NULL;
    if (field->nodetype != BTAST_FIELD)
-      internal_error ("postprocess_field: illegal AST node (non-field)");
+      usage_error ("bt_postprocess_field: invalid AST node (not a field)");
 
    strlwr (field->text);                /* downcase field name */
-   return postprocess_value (field->down, options, replace);
+   return bt_postprocess_value (field->down, options, replace);
 
-} /* postprocess_field() */
+} /* bt_postprocess_field() */
 
 
 
 /* ------------------------------------------------------------------------
-@NAME       : postprocess_entry() 
+@NAME       : bt_postprocess_entry() 
 @INPUT      : 
 @OUTPUT     : 
 @RETURNS    : 
@@ -471,13 +469,15 @@ char *postprocess_field (AST *field, ushort options, boolean replace)
 @CREATED    : 1997/01/10, GPW
 @MODIFIED   : 
 -------------------------------------------------------------------------- */
-void postprocess_entry (AST *top, ushort options)
+void
+bt_postprocess_entry (AST * top, ushort options)
 {
    AST   *cur;
    
    if (top == NULL) return;     /* not even an entry at all! */
    if (top->nodetype != BTAST_ENTRY)
-      internal_error ("postprocess_entry: illegal node type (not entry root)");
+      usage_error ("bt_postprocess_entry: "
+                   "invalid node type (not entry root)");
    strlwr (top->text);          /* downcase entry type */
 
    if (top->down == NULL) return; /* no children at all */
@@ -493,9 +493,9 @@ void postprocess_entry (AST *top, ushort options)
       {
          while (cur)
          {
-            postprocess_field (cur, options, TRUE);
+            bt_postprocess_field (cur, options, TRUE);
             if (top->metatype == BTE_MACRODEF && ! (options & BTO_NOSTORE))
-               add_macro (cur, options);
+               bt_add_macro_value (cur, options);
 
             cur = cur->right;
          }
@@ -504,11 +504,11 @@ void postprocess_entry (AST *top, ushort options)
 
       case BTE_COMMENT:
       case BTE_PREAMBLE:
-         postprocess_value (cur, options, TRUE);
+         bt_postprocess_value (cur, options, TRUE);
          break;
       default:
-         internal_error ("postprocess_entry: unknown entry metatype (%d)",
+         internal_error ("bt_postprocess_entry: unknown entry metatype (%d)",
                          (int) top->metatype);
    }
 
-} /* postprocess_entry() */
+} /* bt_postprocess_entry() */

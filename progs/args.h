@@ -4,7 +4,7 @@
               by the bibparse program.
 @CREATED    : January 1997, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: args.h,v 1.4 1997/09/06 23:14:46 greg Rel $
+@VERSION    : $Id: args.h,v 1.5 1997/11/11 00:16:43 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part
@@ -24,6 +24,7 @@ typedef struct
    ushort    string_opts;
    ushort    other_opts;
    boolean   check_only;
+   boolean   quote_strings;
    boolean   dump_ast;
    boolean   whole_file;
 } parser_options;

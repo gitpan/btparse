@@ -48,8 +48,27 @@ int main (void)
    CHECK (entry == NULL);
    CHECK (entry_ok);
 
-   bt_cleanup ();
+   /* 
+    * Try to parse an empty string; should trigger a syntax error (eof
+    * when expected an entry), so entry_ok will be false.
+    */
+   entry = bt_parse_entry_s ("", NULL, 1, 0, &entry_ok);
+   CHECK (entry == NULL);
+   CHECK (! entry_ok);
 
+   /* 
+    * Try to parse a string with just junk (nothing entry-like) in it --
+    * should cause syntax error just like the empty string.
+    */
+   entry = bt_parse_entry_s ("this is junk", NULL, 1, 0, &entry_ok);
+   CHECK (entry == NULL);
+   CHECK (! entry_ok);
+
+   /* Tell bt_parse_entry_s() to cleanup after itself */
+   entry = bt_parse_entry_s (NULL, NULL, 1, 0, NULL); 
+   CHECK (entry == NULL);
+
+   bt_cleanup ();
    
    if (! ok)
    {

@@ -12,7 +12,7 @@
 @CALLERS    : 
 @CREATED    : 1996/08/07, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: parse_auxiliary.c,v 1.13 1997/09/10 02:02:07 greg Rel $
+@VERSION    : $Id: parse_auxiliary.c,v 1.19 1998/04/03 03:55:27 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -28,6 +28,12 @@
 #include "lex_auxiliary.h"
 #include "parse_auxiliary.h"
 #include "my_dmalloc.h"
+
+extern char * InputFilename;            /* from input.c */
+
+GEN_PRIVATE_ERRFUNC (syntax_error, (char * fmt, ...),
+                     BTERR_SYNTAX, InputFilename, zzline, NULL, -1, fmt)
+
 
 /* this is stolen from PCCTS' err.h */
 static SetWordType bitmask[] = 
@@ -55,9 +61,11 @@ static struct
    { STRING,     "quoted string ({...} or \"...\")" }
 };
 
-#if 0
+
+#ifdef CLEVER_TOKEN_STUFF
 char **token_names;
 #endif
+
 
 void
 fix_token_names (void)
@@ -65,7 +73,7 @@ fix_token_names (void)
    int    i;
    int    num_replace;
 
-#if 0
+#ifdef CLEVER_TOKEN_STUFF               /* clever, but it doesn't work... */
    /* arg! this doesn't work because I don't know how to find out the
     * number of tokens
     */
@@ -126,24 +134,28 @@ append_token_set (char *msg, SetWordType *a)
 
 
 void
-zzsyn(char *text, int tok, 
-      char *egroup, SetWordType *eset, int etok,
-      int k, char *bad_text)
+zzsyn(char *        text,
+      int           tok, 
+      char *        egroup,
+      SetWordType * eset,
+      int           etok,
+      int           k,
+      char *        bad_text)
 {
-#if 0
-   extern char    InputFilename[]; /* from bibparse.c (main program) */
-   extern int     SyntaxErrors;
-#endif
    static char    msg [MAX_ERROR];
    int            len;
+
+#ifndef ALLOW_WARNINGS
+   text = NULL;                         /* avoid "unused parameter" warning */
+#endif
 
    /* Initial message: give location of error */
 
    msg[0] = (char) 0;           /* make sure string is empty to start! */
    if (tok == zzEOF_TOKEN)
-      strcat (msg, "at end of input, ");
+      strcat (msg, "at end of input");
    else
-      sprintf (msg, "found \"%s\", ", bad_text);
+      sprintf (msg, "found \"%s\"", bad_text);
 
    len = strlen (msg);
 
@@ -152,8 +164,13 @@ zzsyn(char *text, int tok,
 
    if (!etok && !eset)
    {
-      syntax_error ("%s", msg);
+      syntax_error (msg);
       return;
+   }
+   else
+   {
+      strcat (msg, ", ");
+      len += 2;
    }
 
    
@@ -192,17 +209,35 @@ zzsyn(char *text, int tok,
    if (egroup && strlen (egroup) > 0) 
       sprintf (msg+len, " in %s", egroup);
 
-   syntax_error ("%s", msg);
+   syntax_error (msg);
 
 }
 #endif /* USER_ZZSYN */
 
 
-void show_ast_stack_elem (int num)
+void
+check_field_name (AST * field)
+{
+   char * name;
+
+   if (! field || field->nodetype != BTAST_FIELD)
+      return;
+
+   name = field->text;
+   if (strchr ("0123456789", name[0]))
+      syntax_error ("invalid field name \"%s\": cannot start with digit",
+                    name);
+}
+
+
+#ifdef STACK_DUMP_CODE
+
+static void
+show_ast_stack_elem (int num)
 {
    extern char *nodetype_names[];       /* nicked from bibtex_ast.c */
-   /*   bt_nodetype_t    nodetype;
-   bt_metatype_t    metatype; */
+   /*   bt_nodetype    nodetype;
+   bt_metatype    metatype; */
    AST   *elem;
 
    elem = zzastStack[num];
@@ -210,7 +245,7 @@ void show_ast_stack_elem (int num)
    if (elem)
    {
       /*      get_node_type (elem, &nodetype, &metatype); */
-      if (elem->nodetype >= BTAST_BOGUS && elem->nodetype <= BTAST_MACRO)
+      if (elem->nodetype <= BTAST_MACRO)
       {
          printf ("{ %s: \"%s\" (line %d, char %d) }\n",
                  nodetype_names[elem->nodetype], 
@@ -228,7 +263,8 @@ void show_ast_stack_elem (int num)
 }
 
 
-void show_ast_stack_top (char *label)
+static void
+show_ast_stack_top (char *label)
 {
    if (label)
       printf ("%s: ast stack top: ", label);
@@ -238,7 +274,8 @@ void show_ast_stack_top (char *label)
 }
 
 
-void dump_ast_stack (char *label)
+static void
+dump_ast_stack (char *label)
 {
    int   i;
 
@@ -255,7 +292,8 @@ void dump_ast_stack (char *label)
 }
 
 
-void show_attrib_stack_elem (int num)
+static void
+show_attrib_stack_elem (int num)
 {
    Attrib   elem;
 
@@ -267,7 +305,8 @@ void show_attrib_stack_elem (int num)
 }
 
 
-void show_attrib_stack_top (char *label)
+static void
+show_attrib_stack_top (char *label)
 {
    if (label)
       printf ("%s: attrib stack top: ", label);
@@ -277,7 +316,8 @@ void show_attrib_stack_top (char *label)
 }
 
 
-void dump_attrib_stack (char *label)
+static void
+dump_attrib_stack (char *label)
 {
    int   i;
 
@@ -292,3 +332,5 @@ void dump_attrib_stack (char *label)
       show_attrib_stack_elem (i);
    }   
 }
+
+#endif /* STACK_DUMP_CODE */

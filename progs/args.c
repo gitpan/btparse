@@ -6,7 +6,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/09-10, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: args.c,v 1.5 1997/09/06 23:14:31 greg Rel $
+@VERSION    : $Id: args.c,v 1.7 1998/03/14 16:38:04 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part
@@ -39,7 +39,8 @@ parser_options options =
 };
 #endif
 
-static boolean delete_quotes = TRUE;
+static boolean quote_strings = FALSE;
+static boolean convert_numbers = TRUE;
 static boolean expand_macros = TRUE;
 static boolean paste_strings = TRUE;
 static boolean collapse_whitespace = TRUE;
@@ -51,8 +52,10 @@ static boolean whole_file = FALSE;
 struct option option_table[] = 
 {
    { "check",      0, &check_only, 1 },
-   { "delquotes",  0, &delete_quotes, 1 },
-   { "keepquotes", 0, &delete_quotes, 0 },
+   { "noquotes",   0, &quote_strings, 0 },
+   { "quote",      0, &quote_strings, 1 },
+   { "convert",    0, &convert_numbers, 1 },
+   { "noconvert",  0, &convert_numbers, 0 },
    { "expand",     0, &expand_macros, 1 },
    { "noexpand",   0, &expand_macros, 0 },
    { "paste",      0, &paste_strings, 1 },
@@ -79,7 +82,7 @@ parser_options *parse_args (int argc, char **argv)
       {
          case ':':
          case '?':
-            fprintf (stderr, "error\n");
+            fprintf (stderr, "%s: error in command-line\n", argv[0]);
             exit (1);
             break;
       }
@@ -88,13 +91,14 @@ parser_options *parse_args (int argc, char **argv)
    options = (parser_options *) malloc (sizeof (parser_options));
 
    options->string_opts = 0;
-   options->string_opts |= (delete_quotes ? BTO_DELQUOTES : 0);
+   options->string_opts |= (convert_numbers ? BTO_CONVERT : 0);
    options->string_opts |= (expand_macros ? BTO_EXPAND : 0);
    options->string_opts |= (paste_strings ? BTO_PASTE : 0);
    options->string_opts |= (collapse_whitespace ? BTO_COLLAPSE : 0);
    
    options->other_opts = 0;       /* do store macro text */
    
+   options->quote_strings = quote_strings;
    options->check_only = check_only;
    options->dump_ast = dump_ast;
    options->whole_file = whole_file;

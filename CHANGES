@@ -1,3 +1,21 @@
+Release 0.30 - 12 March, 1999
+-----------------------------
+* added name-formatting capabilities, and made many improvements in
+  the name-splitting code
+* added string "purification" and "case conversion" in the BibTeX way
+* thoroughly overhauled error handling: it's now possible to catch any
+  error/warning via an arbitrary error handler
+* made lots of useful routines available outside the library (ie.
+  prototypes in btparse.h, renamed with "bt_" prefix, and documented):
+  mainly interfaces to the macro table and value post-processing
+* changed definition of "names" (used for entry types, entry keys, and
+  field/macro names) to be more like BibTeX
+* added lots of documentation: bt_format_names, bt_macros, bt_misc, 
+  bt_postprocess, bt_split_names man pages
+* minor revisions to most existing man pages
+* minor tweaks to the configure/build process
+
+
 Release 0.21 - 20 October, 1997
 ------------------------------
 * added an Autoconf-generated 'configure' script to improve portability

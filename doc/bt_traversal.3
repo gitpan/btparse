@@ -93,10 +93,8 @@
 .nr % 0
 .rr F
 .\}
-.TH bt_traversal 3 "btparse, version 0.21" "6 October, 1997" "btparse"
-.IX Title "bt_traversal 3"
+.TH bt_traversal 3 "btparse, version 0.30" "12 March, 1999" "btparse"
 .UC
-.IX Name "bt_traversal - traveral/query functions in B<btparse> library"
 .if n .hy 0
 .if n .na
 .ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
@@ -190,10 +188,8 @@
 .\}
 .rm #[ #] #H #V #F C
 .SH "NAME"
-.IX Header "NAME"
-bt_traversal \- traveral/query functions in \fBbtparse\fR library
+bt_traversal \- AST traversal/query functions in \fBbtparse\fR library
 .SH "SYNOPSIS"
-.IX Header "SYNOPSIS"
 .PP
 .Vb 7
 \&   AST * bt_next_entry (AST * entry_list, 
@@ -211,7 +207,6 @@ bt_traversal \- traveral/query functions in \fBbtparse\fR library
 \&   char * bt_get_text   (AST * node)
 .Ve
 .SH "DESCRIPTION"
-.IX Header "DESCRIPTION"
 The functions described here are all used to traverse and query the
 abstract-syntax trees (ASTs) returned by the input functions described
 in the \fIbt_input\fR manpage.  The three \*(L"bt_next\*(R" functions (\f(CWbt_next_entry()\fR,
@@ -221,9 +216,7 @@ entry, and the list of simple values associated with a particular field.
 The other functions are just used to query various nodes in the tree for
 the useful information contained in them.
 .Sh "Traversal functions"
-.IX Subsection "Traversal functions"
 .Ip "bt_next_entry()" 4
-.IX Item "bt_next_entry()"
 .Sp
 .Vb 2
 \&   AST * bt_next_entry (AST * entry_list, 
@@ -248,7 +241,6 @@ For example (ignoring error handling and variable declarations):
 \&   }
 .Ve
 .Ip "bt_next_field()" 4
-.IX Item "bt_next_field()"
 .Sp
 .Vb 1
 \&   AST * bt_next_field  (AST * entry, AST * prev, char ** name)
@@ -276,7 +268,6 @@ For example, the loop body in the previous example could be:
 \&   }
 .Ve
 .Ip "bt_next_value()" 4
-.IX Item "bt_next_value()"
 .Sp
 .Vb 4
 \&   AST * bt_next_value (AST * head, 
@@ -318,11 +309,9 @@ replaced with:
 \&      }
 \&   }
 .Ve
-See also the \f(CWbt_get_text()\fR entry elsewhere in this document .
+See also the \f(CWbt_get_text\fR entry elsewhere in this document.
 .Sh "Query functions"
-.IX Subsection "Query functions"
 .Ip "bt_entry_metatype()" 4
-.IX Item "bt_entry_metatype()"
 .Sp
 .Vb 1
 \&   bt_metatype_t bt_entry_metatype (AST * entry)
@@ -337,7 +326,6 @@ entries; and \f(CWBTE_REGULAR\fR corresponds to any other type.)
 Returns \f(CWBTE_UNKNOWN\fR if \f(CWentry\fR is invalid (i.e., \f(CWNULL\fR or not a
 pointer to an entry \s-1AST\s0).
 .Ip "bt_entry_type()" 4
-.IX Item "bt_entry_type()"
 .Sp
 .Vb 1
 \&   char * bt_entry_type (AST * entry)
@@ -347,7 +335,6 @@ appears after the \f(CW'@'\fR character in the original input.  Returns
 \f(CWNULL\fR if \f(CWentry\fR is invalid (i.e., \f(CWNULL\fR or not a pointer to an
 entry \s-1AST\s0).
 .Ip "bt_entry_key()" 4
-.IX Item "bt_entry_key()"
 .Sp
 .Vb 1
 \&   char * bt_entry_key (AST * entry)
@@ -357,7 +344,6 @@ name that appears after the entry-open delimiter in a regular entry.)
 Returns \f(CWNULL\fR if \f(CWentry\fR is invalid (i.e., \f(CWNULL\fR or not a pointer
 to the \s-1AST\s0 for a regular entry).
 .Ip "bt_get_text()" 4
-.IX Item "bt_get_text()"
 .Sp
 .Vb 1
 \&   char * bt_get_text (AST * node)
@@ -370,3 +356,30 @@ or on a comment or preamble entry.  Returns \f(CWNULL\fR if called on an
 invalid \s-1AST\s0 node.
 
 .rn }` ''
+.IX Title "bt_traversal 3"
+.IX Name "bt_traversal - AST traversal/query functions in B<btparse> library"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Subsection "Traversal functions"
+
+.IX Item "bt_next_entry()"
+
+.IX Item "bt_next_field()"
+
+.IX Item "bt_next_value()"
+
+.IX Subsection "Query functions"
+
+.IX Item "bt_entry_metatype()"
+
+.IX Item "bt_entry_type()"
+
+.IX Item "bt_entry_key()"
+
+.IX Item "bt_get_text()"
+

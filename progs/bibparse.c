@@ -9,7 +9,7 @@
 @GLOBALS    : 
 @CREATED    : May 1996, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: bibparse.c,v 1.20 1997/10/05 18:50:52 greg Rel $
+@VERSION    : $Id: bibparse.c,v 1.24 1998/03/14 16:39:16 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part
@@ -40,18 +40,22 @@ char *  Help =
 "\n"
 "Options:\n"
 "  -check         check syntax only (ie. don't print entries out)\n"
-"  -delquotes     delete quotes from strings [default]\n"
-"  -keepquotes    preserve quotes\n"
+"  -noquote       don't quote strings [default]\n"
+"  -quote         put quotes around strings (warning: not bulletproof)\n"
+"  -convert       convert numeric values to strings\n"
+"  -noconvert     don't\n"
 "  -expand        expand macros [default]\n"
 "  -noexand       don't\n"
 "  -paste         paste strings together (ie. obey # operator) [default]\n"
 "  -nopaste       don't\n"
-"  -collapse      collapse whitespace within quoted strings [default]\n"
+"  -collapse      collapse whitespace within strings [default]\n"
 "  -nocollapse    don't\n"
 "\n"
-"Default behaviour is \"fully processed\": -delquotes -expand -paste -collapse\n"
+"Default behaviour is \"fully processed\":\n"
+"  -noquote -convert -expand -paste -collapse\n"
 "\n";
 
+#if 0
 #if DEBUG
 void dprintf (char *format, ...)
 {
@@ -64,7 +68,7 @@ void dprintf (char *format, ...)
 #else
 void dprintf (char *format, ...) {}
 #endif
-
+#endif
 
 /* ------------------------------------------------------------------------
 @NAME       : print_assigned_entry()
@@ -80,7 +84,8 @@ void dprintf (char *format, ...) {}
 @CREATED    : 1997/08/12, GPW
 @MODIFIED   : 
 -------------------------------------------------------------------------- */
-void print_assigned_entry (FILE *stream, AST *top)
+static void
+print_assigned_entry (FILE *stream, AST *top, boolean quote_strings)
 {
    char  *type, *key;
    char  *field_name;
@@ -97,6 +102,7 @@ void print_assigned_entry (FILE *stream, AST *top)
    while ((field = bt_next_field (top, field, &field_name)))
    {
       AST *   value;
+      bt_nodetype nodetype;
       char *  text;
       boolean first;
 
@@ -105,14 +111,20 @@ void print_assigned_entry (FILE *stream, AST *top)
       value = NULL;
       first = TRUE;
       
-      while ((value = bt_next_value (field, value, NULL, &text)))
+      while ((value = bt_next_value (field, value, &nodetype, &text)))
       {
          if (!first) fputc ('#', stream);
-         if (text) fputs (text, stream);
+         if (text) 
+         {
+            if (nodetype == BTAST_STRING && quote_strings)
+               fprintf (stream, "{%s}", text);
+            else
+               fputs (text, stream);
+         }
          first = FALSE;
       }
 
-      fputc ('\n', stream);
+      fputc ('\n', stream);             /* newline between fields */
    }
 
    fputc ('\n', stream);                /* blank line to end the entry */
@@ -132,7 +144,8 @@ void print_assigned_entry (FILE *stream, AST *top)
 @CREATED    : 1997/08/13, GPW
 @MODIFIED   : 
 -------------------------------------------------------------------------- */
-void print_value_entry (FILE *stream, AST *top)
+static void
+print_value_entry (FILE *stream, AST *top)
 {
    char *  type;
    AST *   value;
@@ -169,7 +182,8 @@ void print_value_entry (FILE *stream, AST *top)
 @MODIFIED   : 1997/08/13, GPW: changed to differentiate between the two,
                                ahem, meta-meta-types of entries
 -------------------------------------------------------------------------- */
-void print_entry (FILE *stream, AST *top)
+static void
+print_entry (FILE *stream, AST *top, boolean quote_strings)
 {
 
 #if DEBUG
@@ -180,7 +194,7 @@ void print_entry (FILE *stream, AST *top)
    {
       case BTE_MACRODEF:
       case BTE_REGULAR:
-         print_assigned_entry (stream, top);
+         print_assigned_entry (stream, top, quote_strings);
          break;
 
       case BTE_COMMENT:
@@ -216,7 +230,8 @@ void print_entry (FILE *stream, AST *top)
               a function pointer argument to specify what to do 
               to each entry
 -------------------------------------------------------------------------- */
-int process_file (char *filename, parser_options *options)
+static int
+process_file (char *filename, parser_options *options)
 {
    FILE   *infile;
    AST    *cur_entry;
@@ -256,7 +271,7 @@ int process_file (char *filename, parser_options *options)
       overall_status &= status;
       if (!cur_entry) break;
       if (!options->check_only)
-         print_entry (stdout, cur_entry);
+         print_entry (stdout, cur_entry, options->quote_strings);
       if (options->dump_ast)
          dump_ast ("AST for whole entry:\n", cur_entry);
       bt_free_ast (cur_entry);
@@ -292,5 +307,5 @@ int main (int argc, char *argv[])
 
    bt_cleanup ();
    free (options);
-   exit (error_status (NULL));
+   exit (bt_error_status (NULL));
 }

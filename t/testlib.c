@@ -9,10 +9,11 @@
 @CALLERS    : 
 @CREATED    : 1997/09/26, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: testlib.c,v 1.1 1997/09/26 13:37:17 greg Rel $
+@VERSION    : $Id: testlib.c,v 1.2 1998/03/17 03:09:19 greg Rel $
 -------------------------------------------------------------------------- */
 
 #include "bt_config.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include "testlib.h"
 #include "my_dmalloc.h"

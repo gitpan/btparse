@@ -1,6 +1,6 @@
 =head1 NAME
 
-bt_traversal - traveral/query functions in B<btparse> library
+bt_traversal - AST traversal/query functions in B<btparse> library
 
 =head1 SYNOPSIS
 
@@ -119,7 +119,7 @@ replaced with:
       }
    }
 
-See also L</bt_get_text()>.
+See also L</bt_get_text>.
 
 =back
 

@@ -6,7 +6,7 @@ LIB     = btparse
 LIBFILE = lib$(LIB).a
 CPPFLAGS = -I$(INCDIR)
 
-LDFLAGS = -L$(LIBDIR) $(OTHERLIBDIRS) -l$(LIB) $(OTHERLIBS)
+LDFLAGS = -L$(LIBDIR) -l$(LIB) $(EXTRA_LDFLAGS)
 
 TESTLIB_SRC = testlib.c
 TESTLIB_OBJ = testlib.o
@@ -14,6 +14,9 @@ TESTLIB_HDR = testlib.h
 
 SIMPLE = simple_test
 READ   = read_test
+
+OBJ    = $(SIMPLE).o $(READ).o $(TESTLIB_OBJ)
+EXEC   = $(SIMPLE) $(READ)
 
 all test : simple read
 
@@ -33,7 +36,4 @@ lib :
 	cd $(LIBDIR) ; make $(LIBFILE)
 
 clean :
-	rm -f simple_test.o core logfile
-
-scrub :
-	rm -f simple_test
+	rm -f $(OBJ) $(EXEC) core logfile

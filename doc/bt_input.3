@@ -93,10 +93,8 @@
 .nr % 0
 .rr F
 .\}
-.TH bt_input 3 "btparse, version 0.21" "6 October, 1997" "btparse"
-.IX Title "bt_input 3"
+.TH bt_input 3 "btparse, version 0.30" "12 March, 1999" "btparse"
 .UC
-.IX Name "bt_input - input/parsing functions in B<btparse> library"
 .if n .hy 0
 .if n .na
 .ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
@@ -190,10 +188,8 @@
 .\}
 .rm #[ #] #H #V #F C
 .SH "NAME"
-.IX Header "NAME"
 bt_input \- input/parsing functions in \fBbtparse\fR library
 .SH "SYNOPSIS"
-.IX Header "SYNOPSIS"
 .PP
 .Vb 13
 \&   void  bt_set_stringopts (bt_metatype_t metatype, ushort options);
@@ -211,11 +207,9 @@ bt_input \- input/parsing functions in \fBbtparse\fR library
 \&                           boolean * overall_status);
 .Ve
 .SH "DESCRIPTION"
-.IX Header "DESCRIPTION"
 The functions described here are used to read and parse BibTeX data,
 converting it from raw text to abstract-syntax trees (ASTs).
 .Ip "bt_set_stringopts ()" 4
-.IX Item "bt_set_stringopts ()"
 .Sp
 .Vb 1
 \&   void bt_set_stringopts (bt_metatype_t metatype, ushort options);
@@ -223,25 +217,24 @@ converting it from raw text to abstract-syntax trees (ASTs).
 Set the string-processing options for a particular entry metatype.  This
 affects the entry post-processing done by \f(CWbt_parse_entry_s()\fR,
 \f(CWbt_parse_entry()\fR, and \f(CWbt_parse_file()\fR.  If \f(CWbt_set_stringopts()\fR
-is never called, the four metatypes default to the following string
-options:
+is never called, the four metatypes default to the following sets of
+string options:
 .Sp
 .Vb 4
-\&   BTE_REGULAR    BTO_DELQUOTES | BTO_EXPAND | BTO_PASTE | BTO_COLLAPSE
-\&   BTE_COMMENT    BTO_DELQUOTES
-\&   BTE_PREAMBLE   BTO_DELQUOTES
-\&   BTE_MACRODEF   BTO_DELQUOTES | BTO_EXPAND | BTO_PASTE
+\&   BTE_REGULAR    BTO_CONVERT | BTO_EXPAND | BTO_PASTE | BTO_COLLAPSE
+\&   BTE_COMMENT    0
+\&   BTE_PREAMBLE   0
+\&   BTE_MACRODEF   BTO_CONVERT | BTO_EXPAND | BTO_PASTE
 .Ve
 For example,
 .Sp
 .Vb 1
-\&   bt_set_stringopts (BTE_COMMENT, BTO_DELQUOTES | BTO_COLLAPSE);
+\&   bt_set_stringopts (BTE_COMMENT, BTO_COLLAPSE);
 .Ve
-will cause the library both to delete quotes and to collapse whitespace
-in the value from all comment entries; the \s-1AST\s0 returned by one of the
-\f(CWbt_parse_*\fR functions will reflect this change.
+will cause the library to collapse whitespace in the value from all
+comment entries; the \s-1AST\s0 returned by one of the \f(CWbt_parse_*\fR functions
+will reflect this change.
 .Ip "bt_parse_entry ()" 4
-.IX Item "bt_parse_entry ()"
 .Sp
 .Vb 4
 \&   AST * bt_parse_entry (FILE *    infile,
@@ -295,7 +288,6 @@ this:
 .Ve
 At the end of this loop, \f(CWfeof (file)\fR will be true.
 .Ip "bt_parse_entry_s ()" 4
-.IX Item "bt_parse_entry_s ()"
 .Sp
 .Vb 5
 \&   AST * bt_parse_entry_s (char *    entry_text,
@@ -330,7 +322,7 @@ Thus, \f(CWbt_parse_entry_s()\fR is usually used like this:
 .Vb 8
 \&   while (entry_text = get_more_text ())
 \&   {
-\&      entry_ast = bt_parse_entry (entry_text, NULL, 1, options, &ok);
+\&      entry_ast = bt_parse_entry_s (entry_text, NULL, 1, options, &ok);
 \&      if (ok)
 \&      {
 \&         /* ... process entry ... */
@@ -340,10 +332,9 @@ Thus, \f(CWbt_parse_entry_s()\fR is usually used like this:
 .Vb 1
 \&   bt_parse_entry_s (NULL, NULL, 1, options, NULL);    /* cleanup */
 .Ve
-assuming that \f(CWget_more_text()\fR does as its name implies, and returns
-\f(CWNULL\fR when there's no more text available.
+assuming that \f(CWget_more_text()\fR returns a pointer to the text of an
+entry to parse, or \f(CWNULL\fR if there's no more text available.
 .Ip "bt_parse_file ()" 4
-.IX Item "bt_parse_file ()"
 .Sp
 .Vb 3
 \&   AST * bt_parse_file (char *    filename, 
@@ -362,6 +353,22 @@ Returns a pointer to a linked list of ASTs representing the entries in the
 file, or \f(CWNULL\fR if no entries were found in the file.  This list can
 be traversed with \f(CWbt_next_entry()\fR, and the individual entries then
 traversed as usual (see the \fIbt_traversal\fR manpage).
-=back
 
 .rn }` ''
+.IX Title "bt_input 3"
+.IX Name "bt_input - input/parsing functions in B<btparse> library"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Item "bt_set_stringopts ()"
+
+.IX Item "bt_parse_entry ()"
+
+.IX Item "bt_parse_entry_s ()"
+
+.IX Item "bt_parse_file ()"
+

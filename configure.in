@@ -1,7 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Id: configure.in,v 1.6 1997/10/19 22:54:52 greg Rel $)
+AC_REVISION([$Id: configure.in,v 1.10 1998/03/17 03:45:45 greg Rel $])
 AC_INIT(bibtex.g)
 AC_CONFIG_HEADER(bt_config.h btparse.h)
+
+# Optional arguments to the configure script
+AC_ARG_WITH(dmalloc, [  --with-dmalloc          use the dmalloc library])
+AC_ARG_ENABLE(warnings, [  --enable-warnings       set compiler warning level (no, medium, full, extreme)], [], enable_warnings=medium)
 
 # Check for various programs.
 AC_PROG_INSTALL
@@ -32,12 +36,12 @@ else
   fi
 fi
 
-dnl MNI_ANSI_CC(cc,cflags,action-if-ok,action-if-not-ok)
+dnl GPW_ANSI_CC(cc,cflags,action-if-ok,action-if-not-ok)
 dnl checks that the C compiler named by `cc', when run with `cflags',
 dnl is fairly ANSI-compliant.  (So far just checks that you can
 dnl typedef an enum, declared a `signed char', and declare a prototype.)
 
-AC_DEFUN(MNI_CHECK_ANSI_CC,[
+AC_DEFUN(GPW_CHECK_ANSI_CC,[
 save_cc=$CC
 save_cflags=$CFLAGS
 CC=$1
@@ -56,22 +60,80 @@ CC=$save_cc
 CFLAGS=$save_cflags
 ])
 
-# Next, see if the C compiler appears ANSI-compliant using MNI_ANSI_CC
+# Next, see if the C compiler appears ANSI-compliant using GPW_ANSI_CC
 AC_CACHE_CHECK([that \"$CC $CFLAGS\" has enough ANSI in it],
-btparse_cv_cc_ansi,[
-MNI_CHECK_ANSI_CC($CC,$CFLAGS,btparse_cv_cc_ansi=yes,btparse_cv_cc_ansi=no)
+bt_cv_cc_ansi,[
+GPW_CHECK_ANSI_CC($CC,$CFLAGS,bt_cv_cc_ansi=yes,bt_cv_cc_ansi=no)
 ])
-if test "$btparse_cv_cc_ansi" = "no" ; then 
+if test "$bt_cv_cc_ansi" = "no" ; then 
   AC_MSG_ERROR(an ANSI-compliant C compiler is required to build btparse)
 fi
 
 
-# Generate CFLAGS2 (for compiling PCCTS source files), and add warning
-# options to CFLAGS.
+# Generate CFLAGS2 (for compiling PCCTS source files) -- must be careful
+# to do this *before* we go adding warning options to CFLAGS, because
+# PCCTS files generate lots of warnings
 CFLAGS2=$CFLAGS
 AC_SUBST(CFLAGS2)
+
+# Default cpp flags.  __USE_PROTOS should make the PCCTS code slightly
+# better behaved, but 1) the "prototypes" aren't always prototypes (eg. ()
+# instead of (void)), and 2) pccts/config.h defines __USE_PROTOS anyways --
+# it just doesn't always get defined.  (Huh?!?) When it does, though, we
+# get a warning if -D__USE_PROTOS was on the command line.
+AC_PROG_CPP
+AC_MSG_CHECKING(if __USE_PROTOS is defined by pccts/config.h)
+AC_EGREP_CPP(yes,
+[#include "pccts/config.h"
+#ifdef __USE_PROTOS
+yes
+#endif
+], use_protos_defined=yes, use_protos_defined=no)
+AC_MSG_RESULT($use_protos_defined)
+if test "$use_protos_defined" = "no" ; then
+  DEFINES="$DEFINES -D__USE_PROTOS"
+fi
+AC_SUBST(DEFINES)
+
+
+# Take actions dictated by command-line options (now that we know a fair
+# bit about the environment we're building in)
+if test "$with_dmalloc" = "yes" ; then
+  DEFINES="$DEFINES -DDMALLOC"
+  EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldmalloc"
+fi
+AC_SUBST(EXTRA_LDFLAGS)
+
+if test "$enable_warnings" = "yes" ; then
+  enable_warnings=medium
+fi
+
+if test `uname` = "IRIX" -a "$CC" = "cc" ; then
+  if test "$enable_warnings" != "no"; then
+    CFLAGS="$CFLAGS -fullwarn -prototypes"
+    AC_MSG_RESULT(compiling with $CFLAGS)
+  fi
+fi
+
 if test "$ac_cv_prog_gcc" = "yes" ; then
-  CFLAGS="$CFLAGS -Wall"
+  case "$enable_warnings" in
+    extreme) 
+      # Eventually I'd like my code to be proof against all these warnings;
+      # for the time being, the "full" set will do as a goal.
+      #   write-strings causes problems with arrays of string constants
+      #   nested-externs bitches about my error functions in error.c
+      CFLAGS="$CFLAGS -W -Wall -Wpointer-arith -Wbad-function-cast -Wtraditional -Wshadow -Wcast-align -Wwrite-strings -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs" ;;
+    full)
+      CFLAGS="$CFLAGS -W -Wall -Wpointer-arith -Wbad-function-cast -Wtraditional -Wcast-align -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations" ;;
+    medium)
+      CFLAGS="$CFLAGS -W -Wall -Wpointer-arith -Wbad-function-cast -Wmissing-prototypes" ;;
+    no)
+      ;;
+    *)
+      AC_MSG_WARN([unknown warning level: $enable_warnings])
+      ;;
+  esac
+  AC_MSG_RESULT(compiling with $CFLAGS)
 fi
 
 
@@ -81,7 +143,7 @@ fi
 
 version_test_prog="'"'exit ($] <= 5.004)'"'"
 AC_MSG_CHECKING(for Perl 5.004 or greater)
-AC_CACHE_VAL(btparse_cv_perl,[
+AC_CACHE_VAL(bt_cv_perl,[
 candidates=""
 for dir in `echo $PATH | tr ':' ' '` ; do
   expansions=`echo $dir/perl $dir/perl5* 2>/dev/null`
@@ -95,11 +157,11 @@ for dir in `echo $PATH | tr ':' ' '` ; do
 done
 
 for perl in $candidates ; do
-  if test -z "$btparse_cv_perl" ; then
+  if test -z "$bt_cv_perl" ; then
 #    echo "trying $perl -e $version_test_prog"
     if eval "$perl -e $version_test_prog" ; then
 #      echo "we have a winner"
-      btparse_cv_perl=$perl
+      bt_cv_perl=$perl
 #    else
 #      echo "sorry, please try again"
     fi
@@ -107,7 +169,7 @@ for perl in $candidates ; do
 done
 ])
 
-PERL=$btparse_cv_perl
+PERL=$bt_cv_perl
 AC_SUBST(PERL)
 if test -z "$PERL" ; then
   AC_MSG_RESULT(not found)
@@ -132,7 +194,7 @@ else
   perl_gcc=`$PERL -MConfig -e 'print $Config{gcc} || $Config{gccversion} ? "yes" : "no"'`
   msg="$perl_cc"
   if test "$perl_gcc" = "no" ; then msg="$msg (not gcc)" ; fi
-  if test "$perl_gcc" = "yes" -a $perl_cc != "gcc" ; then msg="$msg (it's gcc)" ; fi
+  if test "$perl_gcc" = "yes" -a "$perl_cc" != "gcc" ; then msg="$msg (it's gcc)" ; fi
 
   AC_MSG_RESULT($perl_cc)
   if test -z "$perl_cc" ; then
@@ -141,7 +203,7 @@ else
 
   if test "$ac_cv_prog_gcc" = "yes" -a "$perl_gcc" = "no" ; then
     AC_MSG_WARN([using gcc to build btparse, but something else was used to build Perl -- defining NDEBUG])
-    CPPFLAGS="$CPPFLAGS -DNDEBUG"
+    DEFINES="$DEFINES -DNDEBUG"
   fi
 
   AC_MSG_CHECKING(various other Perl configuration parameters)
@@ -156,18 +218,18 @@ else
   fi
 
   AC_CACHE_CHECK([if compiler used to build Perl has enough ANSI in it],
-btparse_cv_perl_cc_ansi,[
-MNI_CHECK_ANSI_CC($perl_cc,$perl_ccflags,
-                  btparse_cv_perl_cc_ansi=yes,btparse_cv_perl_cc_ansi=no)
+bt_cv_perl_cc_ansi,[
+GPW_CHECK_ANSI_CC($perl_cc,$perl_ccflags,
+                  bt_cv_perl_cc_ansi=yes,bt_cv_perl_cc_ansi=no)
 ])
-  if test "$btparse_cv_perl_cc_ansi" = "no" ; then
+  if test "$bt_cv_perl_cc_ansi" = "no" ; then
     AC_MSG_WARN(\"$perl_cc $perl_ccflags\" is not ANSI-compliant; you will have to override this and use \"$CC $CFLAGS $perl_cppflags\" to build Text::BibTeX)
     perl_cc=$CC
     perl_ccflags="$CFLAGS $perl_cppflags"
   fi
 
   AC_MSG_CHECKING(for ushort when compiling XSUBs)
-AC_CACHE_VAL(btparse_cv_type_ushort_xsub, [
+AC_CACHE_VAL(bt_cv_type_ushort_xsub, [
 save_cc=$CC
 save_cflags=$CFLAGS
 CC=$perl_cc
@@ -182,12 +244,12 @@ AC_TRY_COMPILE([
 #endif
 int t() {   /* replace the last #if'd out line */
 ushort i;
-], btparse_cv_type_ushort_xsub=yes, btparse_cv_type_ushort_xsub=no)
+], bt_cv_type_ushort_xsub=yes, bt_cv_type_ushort_xsub=no)
 CC=$save_cc
 CFLAGS=$save_cflags
 ])
-  AC_MSG_RESULT($btparse_cv_type_ushort_xsub)
-  if test "$btparse_cv_type_ushort_xsub" = "yes" ; then 
+  AC_MSG_RESULT($bt_cv_type_ushort_xsub)
+  if test "$bt_cv_type_ushort_xsub" = "yes" ; then 
     AC_DEFINE(HAVE_USHORT_XSUB)
   fi
 fi
@@ -197,36 +259,36 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(limits.h)
 
 AC_MSG_CHECKING(for ushort in <sys/types.h>)
-AC_CACHE_VAL(btparse_cv_type_ushort, [
+AC_CACHE_VAL(bt_cv_type_ushort, [
 AC_TRY_COMPILE([
 #include <sys/types.h>
 ],[
 ushort i;
-], btparse_cv_type_ushort=yes, btparse_cv_type_ushort=no)])
-AC_MSG_RESULT($btparse_cv_type_ushort)
-if test "$btparse_cv_type_ushort" = "yes" ; then 
+], bt_cv_type_ushort=yes, bt_cv_type_ushort=no)])
+AC_MSG_RESULT($bt_cv_type_ushort)
+if test "$bt_cv_type_ushort" = "yes" ; then 
   AC_DEFINE(HAVE_USHORT)
 fi
 
 AC_MSG_CHECKING(for boolean in <sys/types.h>)
-AC_CACHE_VAL(btparse_cv_type_boolean, [
+AC_CACHE_VAL(bt_cv_type_boolean, [
 AC_TRY_COMPILE([
 #include <sys/types.h>
 ],[
 boolean f;
-], btparse_cv_type_boolean=yes, btparse_cv_type_boolean=no)])
-AC_MSG_RESULT($btparse_cv_type_boolean)
-if test "$btparse_cv_type_boolean" = "yes" ; then 
+], bt_cv_type_boolean=yes, bt_cv_type_boolean=no)])
+AC_MSG_RESULT($bt_cv_type_boolean)
+if test "$bt_cv_type_boolean" = "yes" ; then 
   AC_DEFINE(HAVE_BOOLEAN)
 fi
 
 AC_MSG_CHECKING(for strdup declaration in <string.h>)
-dnl AC_CACHE_VAL(btparse_cv_decl_strdup, [
+dnl AC_CACHE_VAL(bt_cv_decl_strdup, [
 dnl AC_EGREP_HEADER(strdup *\(, string.h, 
-dnl btparse_cv_decl_strdup=yes, btparse_cv_decl_strdup=no)])
-AC_EGREP_HEADER([strdup *\(], string.h, btparse_cv_decl_strdup=yes, btparse_cv_decl_strdup=no)
-AC_MSG_RESULT($btparse_cv_decl_strdup)
-if test "$btparse_cv_decl_strdup" = "yes" ; then 
+dnl bt_cv_decl_strdup=yes, bt_cv_decl_strdup=no)])
+AC_EGREP_HEADER([strdup *\(], string.h, bt_cv_decl_strdup=yes, bt_cv_decl_strdup=no)
+AC_MSG_RESULT($bt_cv_decl_strdup)
+if test "$bt_cv_decl_strdup" = "yes" ; then 
   AC_DEFINE(HAVE_STRDUP_DECL)
 fi
 
@@ -237,7 +299,31 @@ AC_C_CONST
 dnl Checks for library functions.
 AC_FUNC_ALLOCA
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(strdup strlwr strupr)
+AC_CHECK_FUNCS(strdup strlwr strupr vsnprintf)
+
+# Make sure that sprintf() has the required behaviour of returning the
+# number of characters printed.
+AC_CACHE_CHECK([that sprintf returns number of characters printed],
+bt_cv_sprintf_ok,[
+AC_TRY_RUN([
+int main (void)
+{
+   char buf[43];
+   int len, c;
+
+   c = sprintf (buf, "This is a test message.  It has length 42.");
+   len = strlen (buf);
+   exit (! (len == 42 && c == len));
+}
+], bt_cv_sprintf_ok=yes, bt_cv_sprintf_ok=no, bt_cv_sprintf_ok=maybe)])
+
+case "$sprintf_ok" in
+  maybe) 
+    AC_MSG_WARN([cross-compiling, so not sure about sprintf()--will assume it's OK]) ;;
+  no)
+    AC_MSG_ERROR([sprintf is broken -- get a C library that works]) ;;
+  yes) ;;
+esac
 
 AC_CHECK_FUNC(getopt_long_only, gnu_getopt=yes, gnu_getopt=no)
 if test "$gnu_getopt" = "no" ; then

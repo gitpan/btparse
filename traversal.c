@@ -5,7 +5,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/21, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: traversal.c,v 1.12 1997/09/29 18:32:57 greg Rel $
+@VERSION    : $Id: traversal.c,v 1.15 1998/03/02 21:40:28 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -41,7 +41,7 @@ AST *bt_next_entry (AST *entry_list, AST *prev_entry)
 }
 
 
-bt_metatype_t bt_entry_metatype (AST *entry)
+bt_metatype bt_entry_metatype (AST *entry)
 {
    if (!entry) return BTE_UNKNOWN;
    if (entry->nodetype != BTAST_ENTRY)
@@ -78,7 +78,7 @@ char *bt_entry_key (AST *entry)
 AST *bt_next_field (AST *entry, AST *prev, char **name)
 {
    AST  *field;
-   bt_metatype_t metatype;
+   bt_metatype metatype;
 
    *name = NULL;
    if (!entry || !entry->down) return NULL; /* protect against empty entry */
@@ -110,10 +110,10 @@ AST *bt_next_macro (AST *entry, AST *prev, char **name)
 }
 
 
-AST *bt_next_value (AST *top, AST *prev, bt_nodetype_t *nodetype, char **text)
+AST *bt_next_value (AST *top, AST *prev, bt_nodetype *nodetype, char **text)
 {
-   bt_nodetype_t nt;                    /* type of `top' node (to check) */
-   bt_metatype_t mt;
+   bt_nodetype nt;                    /* type of `top' node (to check) */
+   bt_metatype mt;
    AST *         value;
 
    if (nodetype) *nodetype = BTAST_BOGUS;
@@ -156,12 +156,11 @@ AST *bt_next_value (AST *top, AST *prev, bt_nodetype_t *nodetype, char **text)
 
 char *bt_get_text (AST *node)
 {
-   ushort pp_options = BTO_DELQUOTES | BTO_EXPAND | BTO_PASTE | BTO_COLLAPSE;
-                                        /* options for full processing: */
-                                        /* delete quotes, expand macros, */
-                                        /* paste strings, collapse ws */
-   bt_nodetype_t nt;
-   bt_metatype_t mt;
+   ushort pp_options = BTO_FULL;        /* options for full processing: */
+                                        /* expand macros, paste strings, */
+                                        /* collapse whitespace */
+   bt_nodetype nt;
+   bt_metatype mt;
 
    nt = node->nodetype;
    mt = node->metatype;
@@ -172,16 +171,16 @@ char *bt_get_text (AST *node)
       char   *value;
 
       dump_ast ("bt_get_text (pre): node =\n", node);
-      value = postprocess_field (node, pp_options, FALSE);
+      value = bt_postprocess_field (node, pp_options, FALSE);
       dump_ast ("bt_get_text (post): node =\n", node);
       return value;
 #else
-      return postprocess_field (node, pp_options, FALSE);
+      return bt_postprocess_field (node, pp_options, FALSE);
 #endif
    }
    else if (nt == BTAST_ENTRY && (mt == BTE_COMMENT || mt == BTE_PREAMBLE))
    {
-      return postprocess_value (node->down, pp_options, FALSE);
+      return bt_postprocess_value (node->down, pp_options, FALSE);
    }
    else
    {

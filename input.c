@@ -6,7 +6,7 @@
 @CALLS      : 
 @CREATED    : 1997/10/14, Greg Ward (from code in bibparse.c)
 @MODIFIED   : 
-@VERSION    : $Id: input.c,v 1.12 1997/09/26 13:44:16 greg Rel $
+@VERSION    : $Id: input.c,v 1.16 1998/03/02 21:43:12 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -72,7 +72,7 @@ void bt_set_filename (char *filename)
 @CREATED    : 1997/08/24, GPW
 @MODIFIED   : 
 -------------------------------------------------------------------------- */
-void bt_set_stringopts (bt_metatype_t metatype, ushort options)
+void bt_set_stringopts (bt_metatype metatype, ushort options)
 {
    if (metatype < BTE_REGULAR || metatype > BTE_MACRODEF)
       usage_error ("bt_set_stringopts: illegal metatype");
@@ -185,8 +185,8 @@ parse_status (int *saved_counts)
     * returns the opposite of that.
     */
    ignore_emask =
-      (1<<E_NOTIFY) | (1<<E_CONTENT) | (1<<E_STRUCTURAL) | (1<<E_LEXWARN);
-   return !(error_status (saved_counts) & ~ignore_emask);
+      (1<<BTERR_NOTIFY) | (1<<BTERR_CONTENT) | (1<<BTERR_LEXWARN);
+   return !(bt_error_status (saved_counts) & ~ignore_emask);
 }   
 
 
@@ -230,7 +230,7 @@ AST * bt_parse_entry_s (char *    entry_text,
    }
 
    InputFilename = filename;
-   err_counts = get_error_counts (err_counts);
+   err_counts = bt_get_error_counts (err_counts);
 
    if (entry_text == NULL)              /* signal to clean up */
    {
@@ -256,7 +256,8 @@ AST * bt_parse_entry_s (char *    entry_text,
    dump_ast ("bt_parse_entry_s: single entry, after parsing:\n", 
              entry_ast);
 #endif
-   postprocess_entry (entry_ast, StringOptions[entry_ast->metatype] | options);
+   bt_postprocess_entry (entry_ast,
+                         StringOptions[entry_ast->metatype] | options);
 #if DEBUG
    dump_ast ("bt_parse_entry_s: single entry, after post-processing:\n",
              entry_ast);
@@ -304,7 +305,7 @@ AST * bt_parse_entry (FILE *    infile,
    }
 
    InputFilename = filename;
-   err_counts = get_error_counts (err_counts);
+   err_counts = bt_get_error_counts (err_counts);
 
    if (feof (infile))
    {
@@ -393,7 +394,8 @@ AST * bt_parse_entry (FILE *    infile,
    dump_ast ("bt_parse_entry(): single entry, after parsing:\n", 
              entry_ast);
 #endif
-   postprocess_entry (entry_ast, StringOptions[entry_ast->metatype] | options);
+   bt_postprocess_entry (entry_ast,
+                         StringOptions[entry_ast->metatype] | options);
 #if DEBUG
    dump_ast ("bt_parse_entry(): single entry, after post-processing:\n", 
              entry_ast);

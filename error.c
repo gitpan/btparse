@@ -3,11 +3,14 @@
 @DESCRIPTION: Anything relating to reporting or recording errors and 
               warnings.
 @GLOBALS    : errclass_names
+              err_actions
+              err_handlers
               errclass_counts
+              error_buf
 @CALLS      : 
 @CREATED    : 1996/08/28, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: error.c,v 1.11 1997/09/26 13:39:37 greg Rel $
+@VERSION    : $Id: error.c,v 2.4 1998/03/01 17:23:18 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -21,179 +24,225 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include "btparse.h"
 #include "error.h"
 #include "my_dmalloc.h"
 
 
-char *errclass_names[NUM_ERRCLASSES] = 
+#define NUM_ERRCLASSES ((int) BTERR_INTERNAL + 1)
+
+
+static char *errclass_names[NUM_ERRCLASSES] = 
 {
-   NULL,                        /* E_NOTIFY */
-   "warning",                   /* E_CONTENT */ 
-   "warning",                   /* E_STRUCTURAL */
-   "warning",                   /* E_LEXWARN */
-   "warning",                   /* E_USAGEWARN */
-   "error",                     /* E_LEXERR */
-   "syntax error",              /* E_SYNTAX */
-   "fatal error",               /* E_USAGEERR */
-   "internal error"             /* E_INTERNAL */
+   NULL,                        /* BTERR_NOTIFY */
+   "warning",                   /* BTERR_CONTENT */ 
+   "warning",                   /* BTERR_LEXWARN */
+   "warning",                   /* BTERR_USAGEWARN */
+   "error",                     /* BTERR_LEXERR */
+   "syntax error",              /* BTERR_SYNTAX */
+   "fatal error",               /* BTERR_USAGEERR */
+   "internal error"             /* BTERR_INTERNAL */
 };
 
-int errclass_counts[NUM_ERRCLASSES] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-
-/*
- * vprint_message()
- * 
- * low-level driver for printing errors, warnings, etc. of any kind.
- * Depends on no global variables (except errclass_names), does no policing
- * or decision -- just prints the damn thing.
- *
- * Inputs: filename  - name of file where error found
- *         line      - line number in file (1-based)
- *         column    - column in line (0-based; currently ignored)
- *         show_line - print the offending line? (currently ignored)
- *         errclass  - class of error message (content warning, structure 
- *                     warning, lexer error, syntax error)
- *         format    - a printf format for your message
- *         arglist   - the "..." to fill in your format
- * 
- * TO DO: in the lexer (?) we need to build a data structure that will keep
- *        track of where each line of the file begins.  Then, whenever we
- *        find an error, we remember it for later.  When the file is done,
- *        we go back to print error messages; for each one, we can quickly
- *        seek to the start of the offending line using the line-start
- *        data.
- */
-static void
-vprint_message (char    *filename,
-                int      line,
-                int      column,
-                int      show_line,
-                errclass_t errclass,
-                char    *format,
-                va_list  arglist)
+static bt_erraction err_actions[NUM_ERRCLASSES] =
 {
-   char  *name;
+   BTACT_NONE,                  /* BTERR_NOTIFY */  
+   BTACT_NONE,                  /* BTERR_CONTENT */ 
+   BTACT_NONE,                  /* BTERR_LEXWARN */ 
+   BTACT_NONE,                  /* BTERR_USAGEWARN */
+   BTACT_NONE,                  /* BTERR_LEXERR */   
+   BTACT_NONE,                  /* BTERR_SYNTAX */  
+   BTACT_CRASH,                 /* BTERR_USAGEERR */
+   BTACT_ABORT                  /* BTERR_INTERNAL */
+};
 
-   if (filename)
-      fprintf (stderr, filename);
-   if (filename && line > 0)
-      fprintf (stderr, ", ");
-   if (line > 0)
-      fprintf (stderr, "line %d", line);
+void print_error (bt_error *err);
 
-   name = errclass_names[(int) errclass];
-   if (name)
+static bt_err_handler err_handlers[NUM_ERRCLASSES] =
+{
+   print_error,
+   print_error,
+   print_error,
+   print_error,
+   print_error,
+   print_error,
+   print_error,
+   print_error
+};
+
+static int errclass_counts[NUM_ERRCLASSES] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static char error_buf[MAX_ERROR+1];
+
+
+/* ----------------------------------------------------------------------
+ * Error-handling functions.
+ */
+
+void print_error (bt_error *err)
+{
+   char *  name;
+   boolean something_printed;
+
+   something_printed = FALSE;
+
+   if (err->filename)
    {
-      if (filename || line > 0)
+      fprintf (stderr, err->filename);
+      something_printed = TRUE;
+   }
+   if (err->line > 0)                   /* going to print a line number? */
+   {
+      if (something_printed)
          fprintf (stderr, ", ");
-      fprintf (stderr, name);
+      fprintf (stderr, "line %d", err->line);
+      something_printed = TRUE;
+   }
+   if (err->item_desc && err->item > 0) /* going to print an item number? */
+   {
+      if (something_printed)
+         fprintf (stderr, ", ");
+      fprintf (stderr, "%s %d", err->item_desc, err->item);
+      something_printed = TRUE;
    }
 
-   if (filename || line > 0 || name)
+   name = errclass_names[(int) err->class];
+   if (name)
+   {
+      if (something_printed)
+         fprintf (stderr, ", ");
+      fprintf (stderr, name);
+      something_printed = TRUE;
+   }
+
+   if (something_printed)
       fprintf (stderr, ": ");
 
-   vfprintf (stderr, format, arglist);
-   fputc ('\n', stderr);
-}
+   fprintf (stderr, "%s\n", err->message);
+
+} /* print_error() */
 
 
-/*------------------------------------------------------------------------
- * Functions that call vprint_message(), and are called from elsewhere.
- * These freely use the InputFilename global variable, and modify the
- * errclass_counts array.
- * 
- * There are three kinds of error functions, all of which are sufficiently
- * similar to be generated by macros, but sufficiently different that there
- * is one generating macro for each kind of function.  Sigh.  They are:
- *    - ordinary error functions, which print no filename or line number info
- *      (these are: notify(), usage_error(), usage_warning(), internal_error())
- *    - parser error functions, which get filename from global InputFilename
- *      and line number from zzline
- *      (lexical_warning(), lexical_error(), syntax_error()) 
- *    - AST error functions, which get filename from global InputFilename
- *      and line number from a passed-in AST node
- *      (content_warning(), structural_warning())
- *-----------------------------------------------------------------------*/
 
-#define ERRFUNC(func,class,action)              \
-void func (char *format, ...)                   \
-{                                               \
-   va_list    arglist;                          \
-                                                \
-   va_start (arglist, format);                  \
-   vprint_message (NULL, 0, -1, 0,              \
-                   class, format, arglist);     \
-   errclass_counts[(int) class]++;              \
-   va_end (arglist);                            \
-   action;                                      \
-}
+/* ----------------------------------------------------------------------
+ * Error-reporting functions: these are called anywhere in the library
+ * when we encounter an error.
+ */
 
-#define PARSER_ERRFUNC(func,class,action)               \
-void func (char *format, ...)                           \
-{                                                       \
-   extern char *InputFilename;                          \
-   extern int  zzline, zzendcol;                        \
-   va_list    arglist;                                  \
-                                                        \
-   va_start (arglist, format);                          \
-   vprint_message (InputFilename, zzline, zzendcol, 1,  \
-                  class, format, arglist);              \
-   errclass_counts[(int) class]++;                      \
-   va_end (arglist);                                    \
-   action;                                              \
-}
+void
+report_error (bt_errclass class, 
+              char *      filename,
+              int         line,
+              char *      item_desc,
+              int         item,
+              char *      fmt,
+              va_list     arglist)
+{
+   bt_error  err;
+#if !HAVE_VSNPRINTF
+   int       msg_len;
+#endif
 
-#define AST_ERRFUNC(func,class,action)                          \
-void func (AST *ast, char *format, ...)                         \
-{                                                               \
-   extern char *InputFilename;                                  \
-   va_list    arglist;                                          \
-                                                                \
-   va_start (arglist, format);                                  \
-   vprint_message (InputFilename, ast->line, ast->offset, 1,    \
-                   class, format, arglist);                     \
-                                                                \
-   errclass_counts[(int) class]++;                              \
-   va_end (arglist);                                            \
-   action;                                                      \
-}
+   err.class = class;
+   err.filename = filename;
+   err.line = line;
+   err.item_desc = item_desc;
+   err.item = item;
 
-#define GENERAL_ERRFUNC(func,class,action)              \
-void func (char *filename, int line, char *format, ...) \
-{                                                       \
-   va_list    arglist;                                  \
-                                                        \
-   va_start (arglist, format);                          \
-   vprint_message (filename, line, -1, 1,               \
-                   class, format, arglist);             \
-                                                        \
-   errclass_counts[(int) class]++;                      \
-   va_end (arglist);                                    \
-   action;                                              \
-}
-   
+   errclass_counts[(int) class]++;
 
-ERRFUNC        (notify,             E_NOTIFY,     return)
-ERRFUNC        (usage_error,        E_USAGEERR,   exit(1))
-ERRFUNC        (usage_warning,      E_USAGEWARN,  return)
-ERRFUNC        (internal_error,     E_INTERNAL,   abort())
-PARSER_ERRFUNC (lexical_warning,    E_LEXWARN,    return)
-PARSER_ERRFUNC (lexical_error,      E_LEXERR,     return)
-PARSER_ERRFUNC (syntax_error,       E_SYNTAX,     return)
-AST_ERRFUNC    (content_warning,    E_CONTENT,    return)
-AST_ERRFUNC    (structural_warning, E_STRUCTURAL, return)
-GENERAL_ERRFUNC(name_warning,       E_CONTENT,    return)
 
-#undef ERRFUNC
-#undef PARSER_ERRFUNC
-#undef AST_ERRFUNC
-#undef GENERAL_ERRFUNC
+   /* 
+    * Blech -- we're writing to a static buffer because there's no easy
+    * way to know how long the error message is going to be.  (Short of
+    * reimplementing printf(), or maybe printf()'ing to a dummy file
+    * and using the return value -- ugh!)  The GNU C library conveniently
+    * supplies vsnprintf(), which neatly solves this problem by truncating
+    * the output string if it gets too long.  (I could check for this
+    * truncation if I wanted to, but I don't think it's necessary given the
+    * ample size of the message buffer.)  For non-GNU systems, though,
+    * we're stuck with using vsprintf()'s return value.  This can't be
+    * trusted on all systems -- thus there's a check for it in configure.
+    * Also, this won't necessarily trigger the internal_error() if we
+    * do overflow; it's conceivable that vsprintf() itself would crash.  
+    * At least doing it this way we avoid the possibility of vsprintf() 
+    * silently corrupting some memory, and crashing unpredictably at some
+    * later point.
+    */
 
+#if HAVE_VSNPRINTF
+   vsnprintf (error_buf, MAX_ERROR, fmt, arglist);
+#else
+   msg_len = vsprintf (error_buf, fmt, arglist);
+   if (msg_len > MAX_ERROR)
+      internal_error ("static error message buffer overflowed");
+#endif
+
+   err.message = error_buf;
+   if (err_handlers[class])
+      (*err_handlers[class]) (&err);
+
+   switch (err_actions[class])
+   {
+      case BTACT_NONE: return;
+      case BTACT_CRASH: exit (1);
+      case BTACT_ABORT: abort ();
+      default: internal_error ("invalid error action %d for class %d (%s)", 
+                               (int) err_actions[class],
+                               (int) class, errclass_names[class]);
+   }
+
+} /* report_error() */
+
+
+GEN_ERRFUNC (general_error,
+             (bt_errclass class, 
+              char *      filename,
+              int         line,
+              char *      item_desc,
+              int         item,
+              char *      fmt,
+              ...),
+             class, filename, line, item_desc, item, fmt)
+
+GEN_ERRFUNC (error,
+             (bt_errclass class,
+              char *      filename, 
+              int         line, 
+              char *      fmt,
+              ...),
+             class, filename, line, NULL, -1, fmt)
+
+GEN_ERRFUNC (ast_error,
+             (bt_errclass class,
+              AST *       ast,
+              char *      fmt,
+              ...),
+             class, ast->filename, ast->line, NULL, -1, fmt)
+
+GEN_ERRFUNC (notify,
+             (char * fmt, ...),
+             BTERR_NOTIFY, NULL, -1, NULL, -1, fmt)
+
+GEN_ERRFUNC (usage_warning,
+             (char * fmt, ...),
+             BTERR_USAGEWARN, NULL, -1, NULL, -1, fmt)
+
+GEN_ERRFUNC (usage_error,
+             (char * fmt, ...),
+             BTERR_USAGEERR, NULL, -1, NULL, -1, fmt)
+
+GEN_ERRFUNC (internal_error,
+             (char * fmt, ...),
+             BTERR_INTERNAL, NULL, -1, NULL, -1, fmt)
+
+
+/* ======================================================================
+ * Functions to be used outside of the library
+ */
 
 /* ------------------------------------------------------------------------
-@NAME       : reset_error_counts()
+@NAME       : bt_reset_error_counts()
 @INPUT      : 
 @OUTPUT     : 
 @RETURNS    : 
@@ -203,7 +252,7 @@ GENERAL_ERRFUNC(name_warning,       E_CONTENT,    return)
 @CREATED    : 1997/01/08, GPW
 @MODIFIED   : 
 -------------------------------------------------------------------------- */
-void reset_error_counts (void)
+void bt_reset_error_counts (void)
 {
    int  i;
 
@@ -213,7 +262,7 @@ void reset_error_counts (void)
 
 
 /* ------------------------------------------------------------------------
-@NAME       : get_error_count()
+@NAME       : bt_get_error_count()
 @INPUT      : errclass
 @OUTPUT     : 
 @RETURNS    : 
@@ -223,16 +272,17 @@ void reset_error_counts (void)
 @CREATED    : 
 @MODIFIED   : 
 -------------------------------------------------------------------------- */
-int get_error_count (errclass_t errclass)
+int bt_get_error_count (bt_errclass errclass)
 {
    return errclass_counts[errclass];
 }
 
 
 /* ------------------------------------------------------------------------
-@NAME       : get_error_counts()
-@INPUT      : counts - pointer to an array big enough to hold all the
-                       counts, or NULL to make get_error_counts alloc it
+@NAME       : bt_get_error_counts()
+@INPUT      : counts - pointer to an array big enough to hold all the counts
+                       if NULL, the array will be allocated for you (and you
+                       must free() it when done with it)
 @OUTPUT     : 
 @RETURNS    : counts - either the passed-in pointer, or the newly-
                        allocated array if you pass in NULL
@@ -244,7 +294,7 @@ int get_error_count (errclass_t errclass)
 @CREATED    : 1997/01/06, GPW
 @MODIFIED   : 
 -------------------------------------------------------------------------- */
-int *get_error_counts (int *counts)
+int *bt_get_error_counts (int *counts)
 {
    int    i;
 
@@ -258,10 +308,10 @@ int *get_error_counts (int *counts)
 
 
 /* ------------------------------------------------------------------------
-@NAME       : error_status
+@NAME       : bt_error_status
 @INPUT      : saved_counts - an array of error counts as returned by 
-                             get_error_counts, or NULL to not compare
-                             to a previous watermark
+                             bt_get_error_counts, or NULL not to compare
+                             to a previous checkpoint
 @OUTPUT     : 
 @RETURNS    : 
 @DESCRIPTION: Computes a bitmap where a bit is set for each error class
@@ -269,14 +319,14 @@ int *get_error_counts (int *counts)
               saved_counts is NULL, the bit is set of there are have been
               any errors in the corresponding error class).
 
-              Eg. "x & (1<<E_SYNTAX)" (where x is returned by error_status)
+              Eg. "x & (1<<E_SYNTAX)" (where x is returned by bt_error_status)
               is true if there have been any syntax errors.
 @GLOBALS    : 
 @CALLS      : 
 @CREATED    : 
 @MODIFIED   : 
 -------------------------------------------------------------------------- */
-ushort error_status (int *saved_counts)
+ushort bt_error_status (int *saved_counts)
 {
    int     i;
    ushort  status;
@@ -295,4 +345,4 @@ ushort error_status (int *saved_counts)
    }
 
    return status;
-}
+} /* bt_error_status () */

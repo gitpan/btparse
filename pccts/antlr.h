@@ -222,7 +222,7 @@ extern void _inf_zzgettok();
 
 #ifdef __USE_PROTOS
 #define ANTLR_INFO												\
-	Attrib zzempty_attr() {static Attrib a; return a;}			\
+	Attrib zzempty_attr(void) {static Attrib a; return a;}			\
 	Attrib zzconstr_attr(int _tok, char *_text)\
 		{Attrib a; zzcr_attr((&a),_tok,_text); return a;}		\
 	int zzasp=ZZA_STACKSIZE;									\
@@ -246,7 +246,7 @@ extern void _inf_zzgettok();
 
 #ifdef __USE_PROTOS
 #define ANTLR_INFO												\
-	Attrib zzempty_attr() {static Attrib a; return a;}			\
+	Attrib zzempty_attr(void) {static Attrib a; return a;}			\
 	Attrib zzconstr_attr(int _tok, char *_text)\
 		{Attrib a; zzcr_attr((&a),_tok,_text); return a;}		\
 	int zzasp=ZZA_STACKSIZE;									\
@@ -550,7 +550,7 @@ extern int _zzsetmatch_wdfltsig();
 				/* E x t e r n  D e f s */
 
 #ifdef __USE_PROTOS
-extern Attrib zzempty_attr();
+extern Attrib zzempty_attr(void);
 extern Attrib zzconstr_attr(int, char *);
 extern void zzsyn(char *, int, char *, SetWordType *, int, int, char *);
 extern int zzset_el(unsigned, SetWordType *);

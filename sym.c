@@ -155,7 +155,7 @@ zzs_init(int sz, int strs)
 void
 zzs_free(void)
 {
-    int   i;
+    unsigned i;
     Sym  *cur, *next;
 
     for (i = 0; i < size; i++)

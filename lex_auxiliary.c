@@ -19,7 +19,7 @@
 @CREATED    : Greg Ward, 1996/07/25-28
 @MODIFIED   : Jan 1997
               Jun 1997
-@VERSION    : $Id: lex_auxiliary.c,v 1.24 1997/09/29 17:41:43 greg Rel $
+@VERSION    : $Id: lex_auxiliary.c,v 1.28 1998/04/03 03:58:29 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -31,6 +31,7 @@
 
 #include "bt_config.h"
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include <assert.h>
@@ -42,6 +43,14 @@
 
 #define DEBUG 0
 #define DUPE_TEXT 0
+
+extern char * InputFilename;            /* from input.c */
+
+GEN_PRIVATE_ERRFUNC (lexical_warning, (char * fmt, ...),
+                     BTERR_LEXWARN, InputFilename, zzline, NULL, -1, fmt)
+GEN_PRIVATE_ERRFUNC (lexical_error, (char * fmt, ...),
+                     BTERR_LEXERR, InputFilename, zzline, NULL, -1, fmt)
+
 
 
 /* ----------------------------------------------------------------------
@@ -65,9 +74,9 @@ char *         zztoktext = NULL;
  *     the character ('(' or '{') which opened the entry currently being
  *     scanned (we use this to make sure that the entry opener and closer
  *     match; if not, we issue a warning)
- *   EntryMetatype: (NB. typedef for bt_metatype_t is in btparse.h)
+ *   EntryMetatype: (NB. typedef for bt_metatype is in btparse.h)
  *     classifies entries according to the syntax we will use to parse them;
- *     also winds up (after being changed to a bt_nodetype_t value) in the 
+ *     also winds up (after being changed to a bt_nodetype value) in the 
  *     node that roots the entry AST:
  *       comment    - anything between () or {}
  *       preamble   - a single compound value
@@ -88,7 +97,7 @@ char *         zztoktext = NULL;
 static enum { toplevel, after_at, after_type, in_comment, in_entry } 
                EntryState;
 static char    EntryOpener;             /* '(' or '{' */
-static bt_metatype_t
+static bt_metatype
                EntryMetatype;
 static int     JunkCount;               /* non-whitespace chars at toplevel */
 
@@ -146,6 +155,16 @@ void lex_info (void)
 
 void zzcr_attr (Attrib *a, int tok, char *txt)
 {
+   if (tok == STRING)
+   {
+      int   len = strlen (txt);
+
+      assert ((txt[0] == '{' && txt[len-1] == '}')
+              || (txt[0] == '"' && txt[len-1] == '"'));
+      txt[len-1] = (char) 0;            /* remove closing quote from string */
+      txt++;                            /* so we'll skip the opening quote */
+   }
+
 #if DUPE_TEXT
    a->text = strdup (txt);
 #else
@@ -344,7 +363,11 @@ report_state (char *where)
            state_names[EntryState]);
 }
 #else
-void report_state (char *where) { }
+# define report_state(where)
+/*
+static void
+report_state (char *where) { }
+*/
 #endif
   
 void initialize_lexer_state (void)
@@ -357,7 +380,7 @@ void initialize_lexer_state (void)
 }
 
 
-bt_metatype_t entry_metatype (void)
+bt_metatype entry_metatype (void)
 {
    return EntryMetatype;
 }
@@ -605,6 +628,24 @@ void start_string (char start_char)
  */
 void end_string (char end_char)
 {
+   char   match;
+
+#ifndef ALLOW_WARNINGS
+   match = (char) 0;                    /* silence "might be used" */
+                                        /* uninitialized" warning */
+#endif
+
+   switch (end_char)
+   {
+      case '}': match = '{'; break;
+      case ')': match = '('; break;
+      case '"': match = '"'; break;
+      default: 
+         internal_error ("end_string(): invalid end_char \"%c\"", end_char);
+   }
+
+   assert (StringOpener == match);
+
    /*
     * If we're at non-zero BraceDepth, that probably means mismatched braces
     * somewhere -- complain about it and reset BraceDepth to minimize future

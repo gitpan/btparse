@@ -4,7 +4,7 @@
 # Makefile macro definitions for possibly non-portable stuff for
 # the btparse library.
 #
-# $Id: Makefile.defs.in,v 1.4 1997/10/05 15:43:04 greg Rel $
+# $Id: Makefile.defs.in,v 1.8 1998/03/17 03:47:09 greg Rel $
 #
 
 # If you plan to install btparse on your system, you might want to change
@@ -30,12 +30,24 @@ INSTALL_MAN3 = $(INSTALL_MAN)/man3
 #   CFLAGS    optimization, debugging, warning flags
 #   CFLAGS2   same, without warnings (for compiling PCCTS files, which
 #             generate many warnings)
-#   CPPFLAGS  header directories (-I...)
+#   DEFINES   preprocessor token definitions (or undefs): -D and -U
+#   EXTRA_CPPFLAGS
+#             anything the user might want to supply manually when
+#             running `make' (more -I, -D, -U, whatever...)
+#   CPPFLAGS  all flags for the C preprocessor
 
 CC = @CC@
 CFLAGS = @CFLAGS@
 CFLAGS2 = @CFLAGS2@
-CPPFLAGS = -Ipccts @CPPFLAGS@
+DEFINES = @DEFINES@
+EXTRA_CPPFLAGS = 
+CPPFLAGS = -Ipccts $(DEFINES) $(EXTRA_CPPFLAGS)
+
+# Linker flags -- needed to build the standalone programs included with
+# the library (test and example programs).  This doesn't include flags
+# needed to link with btparse itself; those are the responsbility of
+# the lower-level makefiles.
+EXTRA_LDFLAGS = @EXTRA_LDFLAGS@
 
 # Archiver (ar) options
 AR = @AR@
@@ -47,15 +59,21 @@ RANLIB = @RANLIB@
 # or modification.  
 ANTLR = antlr
 DLG = dlg
-RUN_PCCTS = ./run_pccts               # my wrapper for antlr and dlg
-PERL = @PERL@                         # needed for run_pccts
+RUN_PCCTS = ./run_pccts#              # my wrapper for antlr and dlg
+PERL = @PERL@#                        # needed for run_pccts
 
 AFLAGS = -ga -gh -gt
 DFLAGS = -C2 -i
 
 
+.SUFFIXES: .i
+
 # Replace the standard implicit .c.o rule to use both CFLAGS and CPPFLAGS,
 # in the GNU manner (ie. like autoconf expects)
-
 .c.o :
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
+
+# This is handy for debugging on occasion (stripcpp is a sed hack of
+# my own devising, and indent is just GNU indent).
+.c.i :
+	$(CC) $(CFLAGS) $(CPPFLAGS) -E $< | stripcpp | indent > $@

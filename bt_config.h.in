@@ -7,11 +7,11 @@
 @GLOBALS    : 
 @CREATED    : 1997/09/06, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: bt_config.h.in,v 1.6 1997/10/01 13:11:12 greg Rel $
+@VERSION    : $Id: bt_config.h.in,v 1.8 1998/03/17 04:02:36 greg Rel $
 -------------------------------------------------------------------------- */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef BT_CONFIG_H
+#define BT_CONFIG_H
 
 /* 
  * strlwr() and strupr() generally seem to be available with MS-DOS
@@ -26,6 +26,14 @@
 
 /* so names.c will know if it can include <alloca.h> */
 #define HAVE_ALLOCA_H 0
+
+
+/* 
+ * vsnprintf() is used to generate error messages, if available (it's 
+ * part of the GNU C Library, but isn't standard -- so I look for it
+ * in configure).
+ */
+#define HAVE_VSNPRINTF 0
 
 
 /* 
@@ -53,4 +61,4 @@ extern char *strdup (const char *s);
 # define strdup(str) xstrdup(str)
 #endif
 
-#endif /* CONFIG_H */
+#endif /* BT_CONFIG_H */

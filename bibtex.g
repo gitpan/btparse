@@ -46,7 +46,7 @@
               Jun 1997, GPW: greatly simplified the lexer, and added handling
                              of %-comments, @comment and @preamble entries,
                              and proper scanning of between-entry junk
-@VERSION    : $Id: bibtex.g,v 1.18 1997/09/10 02:02:07 greg Rel $
+@VERSION    : $Id: bibtex.g,v 1.21 1998/03/14 19:17:14 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -67,6 +67,8 @@
 #include "lex_auxiliary.h"
 #include "error.h"
 #include "my_dmalloc.h"
+
+extern char * InputFilename;            /* for zzcr_ast call in pccts/ast.c */
 >>
 
 /*
@@ -97,23 +99,51 @@
  * of the START lexer, in order to handle newlines, comments, and
  * whitespace.
  *
- * Then comes the regexp for a BibTeX "name", which is used for entry
- * types, citation keys, field names, and macro names.  This definition is
- * much more restrictive than that used by BibTeX itself -- I have taken
- * Nelson Beebe's suggestion (from his TUGboat paper on bibclean) and
- * defined names by enumeration, rather than by exclusion.  This regexp
- * might need some tweaking to reflect reality, but I think letters, digits,
- * colon, plus, apostrophe, dot, hyphen, and underscore should do it.
- *
  * Next comes a "number", which is trivial.  This is needed because a
- * BibTeX simple value may be an unquoted digit string.
+ * BibTeX simple value may be an unquoted digit string; it has to precede
+ * the definition of "name" tokens, because otherwise a digit string would
+ * be a legitimate "name", which would cause an ambiguity inside entries
+ * ("is this a macro or a number?")
+ * 
+ * Then comes the regexp for a BibTeX "name", which is used for entry
+ * types, entry keys, field names, and macro names.  This is basically the
+ * same as BibTeX's definition of such "names", with two differences.  The
+ * key, fundamental difference is that I have defined names by inclusion
+ * rather than exclusion: this regex lists all characters allowed in a
+ * type/key/field name/macro name, rather than listing those characters not
+ * allowed (as the BibTeX documentation does).  The trivial difference is
+ * that I have disallowed a few extra characters: @ \ ~.  Allowing @ could
+ * cause confusing BibTeX syntax, and allowing \ or ~ can cause bogus TeX
+ * code: try putting "\cite{foo\bar}" in your LaTeX document and see what
+ * happens!  I'm also rather skeptical about some of the more exotic
+ * punctuation characters being allowed, but since people have been using
+ * BibTeX's definition of "names" for a decade or so now, I guess we're
+ * stuck with it.  I could always amend name() to warn about any exotic
+ * punctuation that offends me, but that should be an option -- and I don't
+ * have a mechanism for user selectable warnings yet, so it'll have to
+ * wait.
+ * 
+ * Also note that defining "number" ahead of "name" precludes a string of
+ * digits from being a name.  This is usually a good thing; we don't want
+ * to accept digit strings as article types or field names (BibTeX
+ * doesn't).  However -- dubious as it may seem -- digit strings are
+ * legitimate entry keys, so we should accept them there.  This is handled
+ * by the grammar; see the `contents' rule below.
+ * 
+ * Finally, it should be noted that BibTeX does not seem to apply the same
+ * lexical rules to entry types, entry keys, and field names -- so perhaps
+ * doing so here is not such a great idea.  One immediate manifestation of
+ * this is that my grammar in its unassisted state would accept a field
+ * name with leading digits; BibTeX doesn't accept this.  I correct this
+ * with the check_field_name() function, called from the `field' rule in
+ * the grammar and defined in parse_auxiliary.c.
  */
 #token              "\n"            << newline (); >>
 #token COMMENT      "\%~[\n]*\n"    << comment (); >>
 #token              "[\ \r\t]+"     << zzskip (); >>
-#token NAME         "[a-z][a-z0-9:\+/'\.\-_]*"
-                                    << name (); >>
 #token NUMBER       "[0-9]+"
+#token NAME         "[a-z0-9\!\$\&\*\+\-\.\/\:\;\<\>\?\[\]\^\_\`\|]+"
+                                    << name (); >>
 
 /* 
  * Now come the (apparently) easy tokens, i.e. punctuation.  There are a
@@ -302,7 +332,7 @@ bibfile!     : << AST *last; #0 = NULL; >>
  * below, in `body' and `contents', we'll actually use it (in the form of
  * semantic predicates) to select amongst the various syntax options.
  */
-entry        : << bt_metatype_t metatype; >>
+entry        : << bt_metatype metatype; >>
                AT! NAME^
                <<
                   metatype = entry_metatype();
@@ -318,7 +348,7 @@ entry        : << bt_metatype_t metatype; >>
  * contents, delimited by an entry 'opener' and 'closer' (either
  * parentheses or braces).
  */
-body [bt_metatype_t metatype]
+body [bt_metatype metatype]
              : << metatype == BTE_COMMENT >>?
                STRING     << #1->nodetype = BTAST_STRING; >>
              | ENTRY_OPEN! contents[metatype] ENTRY_CLOSE!
@@ -337,9 +367,9 @@ body [bt_metatype_t metatype]
  * the compatibility of my syntax with BibTeX 1.0 when it is released.)
  * '@comment' entries are handled differently, by the `body' rule above.
  */
-contents [bt_metatype_t metatype]
+contents [bt_metatype metatype]
              : << metatype == BTE_REGULAR /* || metatype == BTE_MODIFY */ >>?
-               NAME     << #1->nodetype = BTAST_KEY; >> 
+               ( NAME | NUMBER ) << #1->nodetype = BTAST_KEY; >> 
                COMMA!
                fields
              | << metatype == BTE_MACRODEF >>?
@@ -363,7 +393,7 @@ fields       : field { COMMA! fields }
 
 /* `field' recognizes a single "field = value" assignment. */
 field        : NAME^
-               << #1->nodetype = BTAST_FIELD; >>
+               << #1->nodetype = BTAST_FIELD; check_field_name (#1); >>
                EQUALS! value
                << 
 #if DEBUG > 1
