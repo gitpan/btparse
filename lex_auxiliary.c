@@ -19,8 +19,8 @@
 @CREATED    : Greg Ward, 1996/07/25-28
 @MODIFIED   : Jan 1997
               Jun 1997
-@VERSION    : $Id: lex_auxiliary.c,v 1.28 1998/04/03 03:58:29 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: lex_auxiliary.c,v 1.31 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under
@@ -41,7 +41,6 @@
 #include "prototypes.h"
 #include "my_dmalloc.h"
 
-#define DEBUG 0
 #define DUPE_TEXT 0
 
 extern char * InputFilename;            /* from input.c */
@@ -243,8 +242,8 @@ void alloc_lex_buffer (int size)
  */
 static void
 realloc_lex_buffer (int     size_increment, 
-                    char ** lastpos, 
-                    char ** nextpos)
+                    unsigned char ** lastpos, 
+                    unsigned char ** nextpos)
 {
    int   beg, end, next;
 
@@ -294,7 +293,7 @@ void free_lex_buffer (void)
  *
  * Also prints a couple of lines of useful debugging stuff if DEBUG is true.
  */ 
-void lexer_overflow (char **lastpos, char **nextpos)
+void lexer_overflow (unsigned char **lastpos, unsigned char **nextpos)
 {
 #if DEBUG
    char   head[16], tail[16];
@@ -599,7 +598,7 @@ void start_string (char start_char)
       ParenDepth++;
    if (start_char == '"' && EntryState == in_comment)
    {
-      lexical_error ("comment entries must be delimitied by either braces or parentheses");
+      lexical_error ("comment entries must be delimited by either braces or parentheses");
       EntryState = toplevel;
       zzmode (START);
       return;
@@ -673,6 +672,10 @@ void end_string (char end_char)
        * ARG! again, this is no more wrong than when we strip quotes in
        * post_parse.c, and blithely assume that we can put them back on
        * later for output in BibTeX syntax.  Hmmm.
+       *
+       * Actually, it looks like this isn't a problem after all: you
+       * can't have unbalanced braces in a BibTeX string (at least
+       * not as parsed by btparse).
        */
 
       if (zzlextext[0] == '(')          /* convert to standard quote delims */
@@ -799,7 +802,8 @@ void quote_in_string (void)
 
       if (!QuoteWarned && at_top)
       {
-         lexical_warning ("found \" in string -- you probably mean `` or ''");
+         lexical_warning ("found \" at brace-depth zero in string "
+                          "(TeX accents in BibTeX should be inside braces)");
          QuoteWarned = 1;
       }
       zzmore ();

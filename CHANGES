@@ -1,3 +1,21 @@
+Release 0.32 - 28 November, 1999
+--------------------------------
+* added tree-modification functions in modify.c (untested, undocumented,
+  and unsupported) (feature suggested and implemented by Stéphane
+  Genaud <genaud@icps.u-strasbg.fr>)
+* fixed so 8-bit characters (128 .. 255) don't cause the lexer to
+  get confused and declare bogus "illegal token" errors when parsing
+  from a string (bug spotted by Stéphane Genaud <genaud@icps.u-strasbg.fr>)
+* various minor code and documentation tweaks
+
+
+Release 0.31 - 28 October, 1999
+-------------------------------
+* various documentation tweaks
+* small bug fixes in format_name.c [dump_name()] and string_util.c
+  [bt_change_case()]
+
+
 Release 0.30 - 12 March, 1999
 -----------------------------
 * added name-formatting capabilities, and made many improvements in

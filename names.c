@@ -8,8 +8,8 @@
 @CREATED    : 1997/05/05, Greg Ward (as string_util.c)
 @MODIFIED   : 1997/05/14-05/16, GW: added all the code to split individual 
                                     names, renamed file to names.c
-@VERSION    : $Id: names.c,v 1.22 1998/04/03 04:01:30 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: names.c,v 1.23 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under

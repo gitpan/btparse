@@ -5,8 +5,8 @@
 @CALLS      : 
 @CREATED    : 1997/01/21, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: traversal.c,v 1.15 1998/03/02 21:40:28 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: traversal.c,v 1.17 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under
@@ -20,8 +20,6 @@
 #include "parse_auxiliary.h"
 #include "prototypes.h"
 #include "my_dmalloc.h"
-
-#define DEBUG 0
 
 
 AST *bt_next_entry (AST *entry_list, AST *prev_entry)

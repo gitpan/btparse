@@ -6,8 +6,8 @@
 @CALLS      : 
 @CREATED    : 1997/01/12, Greg Ward (from code in bibparse.c, lex_auxiliary.c)
 @MODIFIED   : 
-@VERSION    : $Id: postprocess.c,v 1.22 1998/03/14 15:53:34 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: postprocess.c,v 1.23 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under

@@ -542,9 +542,9 @@ extern int _zzsetmatch_wdfltsig();
 #endif
 
 #ifdef ZZWCHAR_T
-#define zzchar_t wchar_t
+#define zzchar_t unsigned wchar_t
 #else
-#define zzchar_t char
+#define zzchar_t unsigned char
 #endif
 
 				/* E x t e r n  D e f s */

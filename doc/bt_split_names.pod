@@ -270,3 +270,11 @@ Frees the C<bt_name> structure created by C<bt_split_name()> (including
 the C<bt_stringlist> structure inside the C<bt_name>).
 
 =back
+
+=head1 SEE ALSO
+
+L<btparse>, L<bt_format_names>
+
+=head1 AUTHOR
+
+Greg Ward <gward@python.net>

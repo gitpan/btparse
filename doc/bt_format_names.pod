@@ -288,3 +288,10 @@ responsibility to C<free()> this string.
 
 =back
 
+=head1 SEE ALSO
+
+L<btparse>, L<bt_split_names>
+
+=head1 AUTHOR
+
+Greg Ward <gward@python.net>

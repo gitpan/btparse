@@ -5,8 +5,8 @@
               are explicitly called from the lexer actions in bibtex.g.
 @CREATED    : Summer 1996, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: lex_auxiliary.h,v 1.13 1997/11/27 15:01:28 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: lex_auxiliary.h,v 1.15 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under
@@ -41,7 +41,7 @@ void zzcr_attr (Attrib *a, int tok, char *txt);
 
 void alloc_lex_buffer (int size);
 void free_lex_buffer (void);
-void lexer_overflow (char **lastpos, char **nextpos);
+void lexer_overflow (unsigned char **lastpos, unsigned char **nextpos);
 #if ZZCOPY_FUNCTION
 void zzcopy (char **nextpos, char **lastpos, int *ovf_flag);
 #endif

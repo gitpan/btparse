@@ -255,3 +255,11 @@ them.  (And there's nothing to prevent you from using macros in a
 preamble.)
 
 =back
+
+=head1 SEE ALSO
+
+L<btparse>, L<bt_input>, L<bt_traversal>
+
+=head1 AUTHOR
+
+Greg Ward <gward@python.net>

@@ -6,8 +6,8 @@
 @CALLS      : 
 @CREATED    : 1997/10/14, Greg Ward (from code in bibparse.c)
 @MODIFIED   : 
-@VERSION    : $Id: input.c,v 1.16 1998/03/02 21:43:12 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: input.c,v 1.18 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under
@@ -25,8 +25,6 @@
 #include "prototypes.h"
 #include "error.h"
 #include "my_dmalloc.h"
-
-#define DEBUG 0
 
 
 char *   InputFilename;
@@ -240,7 +238,6 @@ AST * bt_parse_entry_s (char *    entry_text,
    }
 
    zzast_sp = ZZAST_STACKSIZE;          /* workaround apparent pccts bug */
-   initialize_lexer_state ();           /* needed? */
    start_parse (NULL, entry_text, line);
 
    entry (&entry_ast);                  /* enter the parser */
@@ -275,11 +272,9 @@ AST * bt_parse_entry_s (char *    entry_text,
               options - standard btparse options bitmap
 @OUTPUT     : *top    - AST for the entry, or NULL if no entries left in file
 @RETURNS    : same as bt_parse_entry_s()
-@DESCRIPTION: Reads the text of a single entry from the given input file 
-              (using read_entry()), and then calls bt_parse_entry_s()
-              to parse that single entry.
+@DESCRIPTION: Starts (or continues) parsing from a file.
 @GLOBALS    : 
-@CALLS      : bt_parse_entry_s()
+@CALLS      : 
 @CREATED    : Jan 1997, GPW
 @MODIFIED   : 
 -------------------------------------------------------------------------- */

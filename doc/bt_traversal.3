@@ -93,7 +93,7 @@
 .nr % 0
 .rr F
 .\}
-.TH bt_traversal 3 "btparse, version 0.30" "12 March, 1999" "btparse"
+.TH bt_traversal 3 "btparse, version 0.32pre" "28 November, 1999" "btparse"
 .UC
 .if n .hy 0
 .if n .na
@@ -262,7 +262,7 @@ For example, the loop body in the previous example could be:
 .Sp
 .Vb 5
 \&   field = NULL;
-\&   while (field = bt_next_field (entry, field))
+\&   while (field = bt_next_field (entry, field, &field_name))
 \&   {
 \&      /* process field */
 \&   }
@@ -354,6 +354,10 @@ returns the string that results.  Can be called either on a field for a
 regular or macro definition entry (as returned by \f(CWbt_next_field()\fR),
 or on a comment or preamble entry.  Returns \f(CWNULL\fR if called on an
 invalid \s-1AST\s0 node.
+.SH "SEE ALSO"
+the \fIbtparse\fR manpage, the \fIbt_input\fR manpage, the \fIbt_postprocess\fR manpage
+.SH "AUTHOR"
+Greg Ward <gward@python.net>
 
 .rn }` ''
 .IX Title "bt_traversal 3"
@@ -382,4 +386,8 @@ invalid \s-1AST\s0 node.
 .IX Item "bt_entry_key()"
 
 .IX Item "bt_get_text()"
+
+.IX Header "SEE ALSO"
+
+.IX Header "AUTHOR"
 

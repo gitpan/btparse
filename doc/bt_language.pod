@@ -53,7 +53,7 @@ bt_language - the BibTeX data language, as recognized by B<btparse>
                 | NAME
 
 
-=head1 INTRODUCTION
+=head1 DESCRIPTION
 
 One of the problems with BibTeX is that there is no formal specification
 of the language.  This means that users exploring the arcane corners of
@@ -268,3 +268,10 @@ A simple value is a string, number, or name (for macro invocations):
                 | NUMBER
                 | NAME
 
+=head1 SEE ALSO
+
+L<btparse>
+
+=head1 AUTHOR
+
+Greg Ward <gward@python.net>

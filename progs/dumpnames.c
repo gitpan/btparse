@@ -11,7 +11,7 @@
 @CALLERS    : 
 @CREATED    : 1997/09/29, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: dumpnames.c,v 1.1 1997/10/05 17:49:00 greg Rel $
+@VERSION    : $Id: dumpnames.c,v 1.2 1999/11/29 02:14:14 greg Rel $
 -------------------------------------------------------------------------- */
 
 #include <stdio.h>
@@ -20,9 +20,20 @@
 char *Usage = "usage: dumpnames file\n";
 
 
-void dump_component (char *comp, char **tokens, int num_tokens, char *tail)
+/* prototypes */
+void dump_component (char * comp, bt_name * name, int part, char * tail);
+void dump_names (AST * entry);
+boolean process_file (char *filename);
+
+
+void dump_component (char * comp, bt_name * name, int part, char * tail)
 {
    int  i;
+   char ** tokens;
+   int  num_tokens;
+   
+   tokens = name->parts[part];
+   num_tokens = name->part_len[part];
 
    if (num_tokens > 0)
    {
@@ -70,18 +81,21 @@ void dump_names (AST * entry)
          printf ("  %s\n", value);
 
          namelist = bt_split_list (value, "and", NULL, 0, "name");
-         printf ("  splits into %d names:\n", namelist->num_items);
-         for (i = 0; i < namelist->num_items; i++)
+         if (namelist != NULL)
          {
-            printf ("    %s\n", namelist->items[i]);
+            printf ("  splits into %d names:\n", namelist->num_items);
+            for (i = 0; i < namelist->num_items; i++)
+            {
+               printf ("    %s\n", namelist->items[i]);
 
-            name = bt_split_name (namelist->items[i], NULL, 0, i);
-            printf ("      ");
-            dump_component ("first", name->first, name->n_first, "; ");
-            dump_component ("von", name->von, name->n_von, "; ");
-            dump_component ("last", name->last, name->n_last, "; ");
-            dump_component ("jr", name->jr, name->n_jr, NULL);
-            printf ("\n");
+               name = bt_split_name (namelist->items[i], NULL, 0, i);
+               printf ("      ");
+               dump_component ("first", name, BTN_FIRST, "; ");
+               dump_component ("von", name, BTN_VON, "; ");
+               dump_component ("last", name, BTN_LAST, "; ");
+               dump_component ("jr", name, BTN_JR, NULL);
+               printf ("\n");
+            }
          }
       }
    }

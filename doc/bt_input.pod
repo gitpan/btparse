@@ -165,3 +165,11 @@ be traversed with C<bt_next_entry()>, and the individual entries then
 traversed as usual (see L<bt_traversal>).
 
 =back
+
+=head1 SEE ALSO
+
+L<btparse>, L<bt_postprocess>, L<bt_traversal>
+
+=head1 AUTHOR
+
+Greg Ward <gward@python.net>

@@ -74,7 +74,7 @@ C<bt_next_value()> or C<bt_get_text()> to get the field's value.
 For example, the loop body in the previous example could be:
 
    field = NULL;
-   while (field = bt_next_field (entry, field))
+   while (field = bt_next_field (entry, field, &field_name))
    {
       /* process field */
    }
@@ -171,3 +171,11 @@ or on a comment or preamble entry.  Returns C<NULL> if called on an
 invalid AST node.
 
 =back
+
+=head1 SEE ALSO
+
+L<btparse>, L<bt_input>, L<bt_postprocess>
+
+=head1 AUTHOR
+
+Greg Ward <gward@python.net>

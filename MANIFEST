@@ -32,6 +32,7 @@ input.c
 format_name.c
 lex_auxiliary.c
 macros.c
+modify.c
 names.c
 parse_auxiliary.c
 postprocess.c

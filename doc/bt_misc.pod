@@ -137,3 +137,11 @@ brace-depth two:
    A Guide to {{\LaTeXe}}: Document Preparation ...
 
 =back
+
+=head1 SEE ALSO
+
+L<btparse>
+
+=head1 AUTHOR
+
+Greg Ward <gward@python.net>

@@ -33,7 +33,7 @@ $(READ) : $(READ).o $(TESTLIB_OBJ) lib
 	$(CC) $(CFLAGS) -o $@ $(READ).o $(TESTLIB_OBJ) $(LDFLAGS)
 
 lib :
-	cd $(LIBDIR) ; make $(LIBFILE)
+	cd $(LIBDIR) ; $(MAKE) $(LIBFILE)
 
 clean :
 	rm -f $(OBJ) $(EXEC) core logfile

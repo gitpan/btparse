@@ -6,8 +6,8 @@
 @CALLS      : 
 @CREATED    : 1997/01/12, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: macros.c,v 1.17 1998/03/11 16:19:33 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: macros.c,v 1.19 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under
@@ -24,6 +24,21 @@
 #include "my_dmalloc.h"
 #include "bt_debug.h"
 
+
+/*
+ * NUM_MACROS and STRING_SIZE define the size of the static data
+ * structure that holds the macro table.  The defaults are to allocate
+ * 4096 bytes of string space that will be divided up amongst 547
+ * macros.  This should be fine for most applications, but if you have a
+ * big macro table you might need to change these and recompile (don't
+ * forget to rebuild and reinstall Text::BibTeX if you're using it!).
+ * You can set these as high as you like; just remember that a block of
+ * STRING_SIZE bytes will be allocated and not freed as long as you're
+ * using btparse.  Also, NUM_MACROS defines the size of a hashtable, so
+ * it should probably be a prime a bit greater than a power of 2 -- or
+ * something like that.  I'm not sure of the exact Knuthian
+ * specification.
+ */
 #define NUM_MACROS 547
 #define STRING_SIZE 4096
 

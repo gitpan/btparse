@@ -46,8 +46,8 @@
               Jun 1997, GPW: greatly simplified the lexer, and added handling
                              of %-comments, @comment and @preamble entries,
                              and proper scanning of between-entry junk
-@VERSION    : $Id: bibtex.g,v 1.21 1998/03/14 19:17:14 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: bibtex.g,v 1.23 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under
@@ -232,7 +232,6 @@ extern char * InputFilename;            /* for zzcr_ast call in pccts/ast.c */
  *
  * where the functions called are the same as currently in lex_auxiliary.c.
  * 
-
  * However, I've added some trickery here that lets us heuristically detect
  * runaway strings.  The heuristic is as follows: anytime we have a newline
  * in a string, that's reason to suspect a runaway.  We follow up on this
@@ -256,7 +255,7 @@ extern char * InputFilename;            /* for zzcr_ast call in pccts/ast.c */
  * print that warning -- or indeed, even scan for the suspect patterns --
  * more than once for the current string.  (Because chances are if it
  * occurs once, it'll occur again and again and again.)
-
+ *
  * There is also some trickery going on to deal with '@comment' entries.
  * Syntactically, these are just AT NAME STRING, where NAME must be
  * 'comment'.  This means that an '@comment' entry has no delimiters, it
@@ -326,7 +325,7 @@ bibfile!     : << AST *last; #0 = NULL; >>
  * `entry_metatype()' returns the value of a global variable maintained by
  * lex_auxiliary.c that tells us how to parse the entry.  This is needed
  * because, while the different things that look like BibTeX entries
- * (string definition, preamble, actual entry, etc.) have similar a lexical
+ * (string definition, preamble, actual entry, etc.) have a similar lexical
  * makeup, the syntax is different.  In `entry', we just use the entry
  * metatype to determine the nodetype field of the AST node for the entry;
  * below, in `body' and `contents', we'll actually use it (in the form of

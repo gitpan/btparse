@@ -13,7 +13,7 @@
 @CREATED    : 1997/10/19, Greg Ward
 @MODIFIED   : 1997/11/25, GPW: renamed to from purify.c to string_util.c
                                added bt_change_case() and friends
-@VERSION    : $Id: string_util.c,v 1.9 1998/04/03 03:57:16 greg Rel $
+@VERSION    : $Id: string_util.c,v 1.10 1999/10/28 22:50:28 greg Rel $
 -------------------------------------------------------------------------- */
 
 #include <stdlib.h>
@@ -602,9 +602,19 @@ bt_change_case (char   transform,
                convert_special_char (transform, string, &src, &dst, 
                                      &start_sentence, &after_colon);
             }
+
+            /*
+             * Otherwise, it's just something in braces.  This is probably
+             * a proper noun or something encased in braces to protect it
+             * from case-mangling, so we do not case-mangle it.  However,
+             * we *do* switch out of start_sentence or after_colon mode if
+             * we happen to be there (otherwise we'll do the wrong thing
+             * once we're out of the braces).
+             */
             else
             {
                string[dst++] = string[src++];
+               start_sentence = after_colon = FALSE;
                depth++;
             }
             break;

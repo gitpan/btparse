@@ -13,7 +13,7 @@
 @CALLERS    : 
 @CREATED    : 1997/07/29, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: simple_test.c,v 1.11 1998/03/03 01:25:55 greg Rel $
+@VERSION    : $Id: simple_test.c,v 1.12 1999/11/24 03:02:23 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part
@@ -66,6 +66,9 @@ boolean goodtest_macro (AST *entry, test_data *data);
 boolean goodtest_comment (AST *entry, test_data *data);
 boolean goodtest_preamble (AST *entry, test_data *data);
 
+/* and prototypes to keep "gcc -Wall" from whining */
+boolean test_multiple (FILE *, char *, ushort, ushort, int, test *);
+boolean test_wholefile (char *, ushort, ushort, int, test *);
 
 
 /* a priori knowledge about the entry in "regular.bib" (used for both tests) */

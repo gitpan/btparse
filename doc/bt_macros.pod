@@ -142,3 +142,11 @@ expanding the macro as a result of finding it in some file), supply
 C<NULL> for C<filename> and C<0> for C<line>.
 
 =back
+
+=head1 SEE ALSO
+
+L<btparse>
+
+=head1 AUTHOR
+
+Greg Ward <gward@python.net>

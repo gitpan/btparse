@@ -93,7 +93,7 @@
 .nr % 0
 .rr F
 .\}
-.TH bt_language 3 "btparse, version 0.30" "12 March, 1999" "btparse"
+.TH bt_language 3 "btparse, version 0.32pre" "28 November, 1999" "btparse"
 .UC
 .if n .hy 0
 .if n .na
@@ -250,7 +250,7 @@ bt_language \- the BibTeX data language, as recognized by \fBbtparse\fR
 \&                | NUMBER
 \&                | NAME
 .Ve
-.SH "INTRODUCTION"
+.SH "DESCRIPTION"
 One of the problems with BibTeX is that there is no formal specification
 of the language.  This means that users exploring the arcane corners of
 the language are largely on their own, and programmers implementing
@@ -472,6 +472,10 @@ A simple value is a string, number, or name (for macro invocations):
 \&                | NUMBER
 \&                | NAME
 .Ve
+.SH "SEE ALSO"
+the \fIbtparse\fR manpage
+.SH "AUTHOR"
+Greg Ward <gward@python.net>
 
 .rn }` ''
 .IX Title "bt_language 3"
@@ -481,9 +485,13 @@ A simple value is a string, number, or name (for macro invocations):
 
 .IX Header "SYNOPSIS"
 
-.IX Header "INTRODUCTION"
+.IX Header "DESCRIPTION"
 
 .IX Header "LEXICAL GRAMMAR"
 
 .IX Header "SYNTACTIC GRAMMAR"
+
+.IX Header "SEE ALSO"
+
+.IX Header "AUTHOR"
 

@@ -9,7 +9,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/19, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: btparse.h.in,v 1.33 1998/03/03 01:00:41 greg Rel $
+@VERSION    : $Id: btparse.h.in,v 1.34 1999/11/26 04:12:59 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -318,6 +318,10 @@ AST *bt_next_value (AST *head,
                     bt_nodetype *nodetype,
                     char **text);
 char *bt_get_text (AST *node);
+
+/* modify.c */
+void bt_set_text (AST * node, char * new_text);
+void bt_entry_set_key (AST * entry, char * new_key);
 
 /* names.c */
 bt_stringlist * bt_split_list (char *   string,

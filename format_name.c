@@ -6,8 +6,8 @@
 @GLOBALS    : 
 @CREATED    : 
 @MODIFIED   : 
-@VERSION    : $Id: format_name.c,v 1.9 1997/11/30 16:09:07 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: format_name.c,v 1.12 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under
@@ -27,6 +27,14 @@
 
 
 static char EmptyString[] = "";
+
+
+#if DEBUG
+/* prototypes to shut "gcc -Wmissing-prototypes" up */
+void print_tokens (char *partname, char **tokens, int num_tokens);
+void dump_name (bt_name * name);
+void dump_format (bt_name_format * format);
+#endif
 
 
 /* ----------------------------------------------------------------------
@@ -739,6 +747,18 @@ print_tokens (char *partname, char **tokens, int num_tokens)
 STATIC void
 dump_name (bt_name * name)
 {
+   if (name == NULL)
+   {
+      printf (" name: null\n");
+      return;
+   }
+
+   if (name->tokens == NULL)
+   {
+      printf (" name: null token list\n");
+      return;
+   }
+
    printf (" name (%p):\n", name);
    printf ("  total number of tokens = %d\n", name->tokens->num_items);
    print_tokens ("  first", name->parts[BTN_FIRST], name->part_len[BTN_FIRST]);

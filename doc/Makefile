@@ -30,4 +30,6 @@ clean :
 	rm -f $(MAN3)
 
 install : man
+	$(INSTALL) -d $(INSTALL_MAN3)
 	cp $(MAN3) $(INSTALL_MAN3)
+	cd $(INSTALL_MAN3) && chmod 0644 $(MAN3)

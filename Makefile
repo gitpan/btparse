@@ -6,7 +6,7 @@
 #
 # Thus, you shouldn't have to change anything here.
 #
-# $Id: Makefile,v 1.13 1998/04/03 04:47:50 greg Rel $
+# $Id: Makefile,v 1.15 1999/11/30 02:08:51 greg Rel $
 #
 
 include Makefile.defs		# CC, OPT, CFLAGS, etc.
@@ -32,6 +32,7 @@ LIBSRC =\
    postprocess.c\
    macros.c\
    traversal.c\
+   modify.c\
    names.c\
    tex_tree.c\
    string_util.c\
@@ -106,8 +107,10 @@ test: $(LIB)
 	cd t ; $(MAKE) test
 
 install: $(LIB)
-	cp $(INCLUDE) $(INSTALL_INC)
-	cp $(LIB) $(INSTALL_LIB)
+	$(INSTALL) -d $(INSTALL_INC)
+	$(INSTALL) -d $(INSTALL_LIB)
+	$(INSTALL) -m 0644 $(INCLUDE) $(INSTALL_INC)
+	$(INSTALL) -m 0644 $(LIB) $(INSTALL_LIB)
 	cd doc ; $(MAKE) install
 
 uninstall:

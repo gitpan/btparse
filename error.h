@@ -5,8 +5,8 @@
               library).
 @CREATED    : Summer 1996, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: error.h,v 1.10 1997/11/12 17:17:58 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: error.h,v 1.11 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under

@@ -1,8 +1,8 @@
 # Makefile fragment to set the version number and release date
 # (needed for building a distribution, documentation, etc.)
 
-# $Id: Makefile.version,v 1.4 1999/03/12 00:57:58 greg Rel $
+# $Id: Makefile.version,v 1.6 1999/11/29 03:00:48 greg Rel $
 
-VERSION = 0.30
-VERSION_SYM = 0_30
-RELEASE_DATE = 12 March, 1999
+VERSION = 0.32
+VERSION_SYM = 0_32
+RELEASE_DATE = 28 November, 1999

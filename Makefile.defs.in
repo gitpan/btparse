@@ -4,7 +4,7 @@
 # Makefile macro definitions for possibly non-portable stuff for
 # the btparse library.
 #
-# $Id: Makefile.defs.in,v 1.8 1998/03/17 03:47:09 greg Rel $
+# $Id: Makefile.defs.in,v 1.9 1999/11/30 01:58:29 greg Rel $
 #
 
 # If you plan to install btparse on your system, you might want to change
@@ -14,6 +14,7 @@
 # the `configure' script -- so nothing else should need changing.
 
 SHELL = /bin/sh
+INSTALL = @INSTALL@
 
 # Installation directories
 prefix      = @prefix@

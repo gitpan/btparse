@@ -8,8 +8,8 @@
 @CALLERS    : 
 @CREATED    : 1997/05/29, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: tex_tree.c,v 1.3 1997/09/07 02:36:28 greg Rel $
-@COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
+@VERSION    : $Id: tex_tree.c,v 1.4 1999/11/29 01:13:10 greg Rel $
+@COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under

@@ -691,7 +691,7 @@ SetWordType *whatFollows;
 		fprintf(stderr,
 				"line %d: syntax error at \"%s\" missing %s\n",
 				zzline,
-				(LA(1)==zzEOF_TOKEN)?"<eof>":LATEXT(1),
+				(LA(1)==zzEOF_TOKEN)?"<eof>":(char*)LATEXT(1),
 				zztokens[tokenWanted]);
 		zzconsumeUntil( whatFollows );
 		return 0;
@@ -736,7 +736,7 @@ SetWordType *whatFollows;
 		fprintf(stderr,
 				"line %d: syntax error at \"%s\" missing %s\n",
 				zzline,
-				(LA(1)==zzEOF_TOKEN)?"<eof>":LATEXT(1),
+				(LA(1)==zzEOF_TOKEN)?"<eof>":(char*)LATEXT(1),
 				zztokens[tokenTypeOfSet]);
 		zzconsumeUntil( whatFollows );
 		return 0;
