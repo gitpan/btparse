@@ -4,7 +4,7 @@
               "real thing"), depending on the DMALLOC preprocessor token.
 @CREATED    : 1997/09/06, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: my_dmalloc.h,v 1.1 1997/09/07 02:16:52 greg Exp $
+@VERSION    : $Id: my_dmalloc.h,v 1.1 1997/09/07 02:16:52 greg Rel $
 -------------------------------------------------------------------------- */
 
 #ifndef MY_DMALLOC_H

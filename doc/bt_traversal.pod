@@ -14,7 +14,7 @@ bt_traversal - traveral/query functions in B<btparse> library
 
    bt_metatype_t bt_entry_metatype (AST * entry)
    char * bt_entry_type (AST * entry)
-   char * bt_cite_key   (AST * entry)
+   char * bt_entry_key   (AST * entry)
    char * bt_get_text   (AST * node)
 
 =head1 DESCRIPTION
@@ -150,9 +150,9 @@ appears after the C<'@'> character in the original input.  Returns
 C<NULL> if C<entry> is invalid (i.e., C<NULL> or not a pointer to an
 entry AST).
 
-=item bt_cite_key()
+=item bt_entry_key()
 
-   char * bt_cite_key (AST * entry)
+   char * bt_entry_key (AST * entry)
 
 Returns the citation key of a regular entry.  (The citation key is the
 name that appears after the entry-open delimiter in a regular entry.)

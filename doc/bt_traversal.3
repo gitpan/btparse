@@ -93,7 +93,7 @@
 .nr % 0
 .rr F
 .\}
-.TH bt_traversal 3 "btparse, version 0.2" "8 September, 1997" "btparse"
+.TH bt_traversal 3 "btparse, version 0.21" "6 October, 1997" "btparse"
 .IX Title "bt_traversal 3"
 .UC
 .IX Name "bt_traversal - traveral/query functions in B<btparse> library"
@@ -207,7 +207,7 @@ bt_traversal \- traveral/query functions in \fBbtparse\fR library
 .Vb 4
 \&   bt_metatype_t bt_entry_metatype (AST * entry)
 \&   char * bt_entry_type (AST * entry)
-\&   char * bt_cite_key   (AST * entry)
+\&   char * bt_entry_key   (AST * entry)
 \&   char * bt_get_text   (AST * node)
 .Ve
 .SH "DESCRIPTION"
@@ -346,11 +346,11 @@ Returns the type of an entry.  Recall that the type is the name that
 appears after the \f(CW'@'\fR character in the original input.  Returns
 \f(CWNULL\fR if \f(CWentry\fR is invalid (i.e., \f(CWNULL\fR or not a pointer to an
 entry \s-1AST\s0).
-.Ip "bt_cite_key()" 4
-.IX Item "bt_cite_key()"
+.Ip "bt_entry_key()" 4
+.IX Item "bt_entry_key()"
 .Sp
 .Vb 1
-\&   char * bt_cite_key (AST * entry)
+\&   char * bt_entry_key (AST * entry)
 .Ve
 Returns the citation key of a regular entry.  (The citation key is the
 name that appears after the entry-open delimiter in a regular entry.)

@@ -19,7 +19,7 @@
 @CREATED    : Greg Ward, 1996/07/25-28
 @MODIFIED   : Jan 1997
               Jun 1997
-@VERSION    : $Id: lex_auxiliary.c,v 1.23 1997/09/07 02:36:28 greg Exp $
+@VERSION    : $Id: lex_auxiliary.c,v 1.24 1997/09/29 17:41:43 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -258,7 +258,8 @@ realloc_lex_buffer (int     size_increment,
 void free_lex_buffer (void)
 {
    if (zztoktext == NULL)
-      internal_error ("attempt to free unallocated lexical buffer");
+      internal_error ("attempt to free unallocated (or already freed) " 
+                      "lexical buffer");
 
    free (zztoktext);
    zztoktext = NULL;
@@ -741,12 +742,21 @@ void quote_in_string (void)
    }
    else
    {
+      boolean at_top = FALSE;;
+
       /* 
        * Note -- this warning assumes that strings are destined 
        * to be processed by TeX, so it should be optional.  Hmmm.
        */
 
-      if (!QuoteWarned)
+      if (StringOpener == '"' || StringOpener == '(')
+         at_top = (BraceDepth == 0);
+      else if (StringOpener == '{')
+         at_top = (BraceDepth == 1);
+      else
+         internal_error ("Illegal string opener \"%c\"", StringOpener);
+
+      if (!QuoteWarned && at_top)
       {
          lexical_warning ("found \" in string -- you probably mean `` or ''");
          QuoteWarned = 1;

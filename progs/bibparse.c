@@ -9,7 +9,7 @@
 @GLOBALS    : 
 @CREATED    : May 1996, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: bibparse.c,v 1.18 1997/09/07 03:12:46 greg Exp $
+@VERSION    : $Id: bibparse.c,v 1.20 1997/10/05 18:50:52 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part
@@ -87,7 +87,7 @@ void print_assigned_entry (FILE *stream, AST *top)
    AST   *field;
 
    type = bt_entry_type (top);
-   key = bt_cite_key (top);
+   key = bt_entry_key (top);
 
    fprintf (stream, "@%s", type);
    if (key) fprintf (stream, " %s", key);
@@ -105,7 +105,7 @@ void print_assigned_entry (FILE *stream, AST *top)
       value = NULL;
       first = TRUE;
       
-      while (value = bt_next_value (field, value, NULL, &text))
+      while ((value = bt_next_value (field, value, NULL, &text)))
       {
          if (!first) fputc ('#', stream);
          if (text) fputs (text, stream);
@@ -143,7 +143,7 @@ void print_value_entry (FILE *stream, AST *top)
 
    value = NULL;
       
-   while (value = bt_next_value (top, value, NULL, &text))
+   while ((value = bt_next_value (top, value, NULL, &text)))
    {
       if (text) fprintf (stream, "%s\n", text);
    }

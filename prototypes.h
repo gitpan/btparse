@@ -8,7 +8,7 @@
 @CALLS      : 
 @CREATED    : 1997/10/12, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: prototypes.h,v 1.8 1997/09/06 22:57:22 greg Exp $
+@VERSION    : $Id: prototypes.h,v 1.8 1997/09/06 22:57:22 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is

@@ -6,7 +6,7 @@
 @CALLS      : 
 @CREATED    : 1997/10/14, Greg Ward (from code in bibparse.c)
 @MODIFIED   : 
-@VERSION    : $Id: input.c,v 1.11 1997/09/07 03:04:26 greg Exp $
+@VERSION    : $Id: input.c,v 1.12 1997/09/26 13:44:16 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
+#include <assert.h>
 #include "stdpccts.h"
 #include "lex_auxiliary.h"
 #include "prototypes.h"
@@ -74,9 +75,9 @@ void bt_set_filename (char *filename)
 void bt_set_stringopts (bt_metatype_t metatype, ushort options)
 {
    if (metatype < BTE_REGULAR || metatype > BTE_MACRODEF)
-      fatal_error ("bt_set_stringopts: illegal metatype");
+      usage_error ("bt_set_stringopts: illegal metatype");
    if (options & ~BTO_STRINGMASK)
-      fatal_error ("bt_set_stringopts: illegal options "
+      usage_error ("bt_set_stringopts: illegal options "
                    "(must only set string option bits");
 
    StringOptions[metatype] = options;
@@ -224,7 +225,7 @@ AST * bt_parse_entry_s (char *    entry_text,
 
    if (options & BTO_STRINGMASK)        /* any string options set? */
    {
-      fatal_error ("bt_parse_entry_s: illegal options "
+      usage_error ("bt_parse_entry_s: illegal options "
                    "(string options not allowed");
    }
 
@@ -292,13 +293,13 @@ AST * bt_parse_entry (FILE *    infile,
 
    if (prev_file != NULL && infile != prev_file)
    {
-      fatal_error ("bt_parse_entry: you can't interleave calls "
+      usage_error ("bt_parse_entry: you can't interleave calls "
                    "across different files");
    }
 
    if (options & BTO_STRINGMASK)        /* any string options set? */
    {
-      fatal_error ("bt_parse_entry: illegal options "
+      usage_error ("bt_parse_entry: illegal options "
                    "(string options not allowed)");
    }
 
@@ -307,8 +308,16 @@ AST * bt_parse_entry (FILE *    infile,
 
    if (feof (infile))
    {
-      prev_file = NULL;
-      finish_parse (&err_counts);
+      if (prev_file != NULL)            /* haven't already done the cleanup */
+      {
+         prev_file = NULL;
+         finish_parse (&err_counts);
+      }
+      else
+      {
+         usage_warning ("bt_parse_entry: second attempt to read past eof");
+      }
+
       if (status) *status = TRUE;
       return NULL;
    }
@@ -367,7 +376,9 @@ AST * bt_parse_entry (FILE *    infile,
    if (prev_file == NULL)               /* only read from input stream if */
    {                                    /* starting afresh with a file */
       start_parse (infile, NULL, 0);
+      prev_file = infile;
    }
+   assert (prev_file == infile);
 
    entry (&entry_ast);                  /* enter the parser */
    ++zzasp;                             /* why is this done? */
@@ -388,7 +399,6 @@ AST * bt_parse_entry (FILE *    infile,
              entry_ast);
 #endif
 
-   prev_file = infile;
    if (status) *status = parse_status (err_counts);
    return entry_ast;
 
@@ -430,7 +440,7 @@ AST * bt_parse_file (char *    filename,
 
    if (options & BTO_STRINGMASK)        /* any string options set? */
    {
-      fatal_error ("bt_parse_file: illegal options "
+      usage_error ("bt_parse_file: illegal options "
                    "(string options not allowed");
    }
 
@@ -462,8 +472,8 @@ AST * bt_parse_file (char *    filename,
    /* explicit loop over entries, with junk cleaned out by read_entry () */
 
    overall_status = TRUE;              /* assume success */
-   while (cur_entry = 
-          bt_parse_entry (infile, InputFilename, options, &entry_status))
+   while ((cur_entry = bt_parse_entry
+          (infile, InputFilename, options, &entry_status)))
    {
       overall_status &= entry_status;
       if (!entry_status) continue;      /* bad entry -- try next one */

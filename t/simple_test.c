@@ -13,7 +13,7 @@
 @CALLERS    : 
 @CREATED    : 1997/07/29, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: simple_test.c,v 1.6 1997/09/10 02:03:03 greg Exp $
+@VERSION    : $Id: simple_test.c,v 1.9 1997/10/05 18:28:59 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part
@@ -24,11 +24,12 @@
               option) any later version.
 -------------------------------------------------------------------------- */
 
-#include "../bt_config.h"
+#include "bt_config.h"
 #include <stdlib.h>
 #include <string.h>
-#include <btparse.h>
-#include "../my_dmalloc.h"
+#include "btparse.h"
+#include "testlib.h"
+#include "my_dmalloc.h"
 
 int test_num = 0;
 
@@ -64,10 +65,6 @@ boolean goodtest_regular (AST *entry, test_data *data);
 boolean goodtest_macro (AST *entry, test_data *data);
 boolean goodtest_comment (AST *entry, test_data *data);
 boolean goodtest_preamble (AST *entry, test_data *data);
-
-/* other prototypes */
-FILE *open_file (char *basename, char *dirname, char *filename);
-void set_all_stringopts (ushort options);
 
 
 
@@ -189,28 +186,6 @@ test tests[] =
 
 
 #define NUM_TESTS sizeof (tests) / sizeof (tests[0])
-#define DATA_DIR "data"
-#define CHECK(cond)                                             \
-if (! (cond))                                                   \
-{                                                               \
-   fprintf (stderr, "failed check: %s, at %s line %d\n",        \
-            #cond, __FILE__, __LINE__);                         \
-   ok = FALSE;                                                  \
-}
-
-#define CHECK_ESCAPE(cond,escape,what)                          \
-if (! (cond))                                                   \
-{                                                               \
-   fprintf (stderr, "failed check: %s, at %s line %d\n",        \
-            #cond, __FILE__, __LINE__);                         \
-   if (what)                                                    \
-   {                                                            \
-      fprintf (stderr, "(skipping the rest of this %s)\n",      \
-               what);                                           \
-   }                                                            \
-   ok = FALSE;                                                  \
-   escape;                                                      \
-}
 
 
 boolean eviltest_regular (AST * entry, test_data * data)
@@ -237,7 +212,7 @@ boolean eviltest_regular (AST * entry, test_data * data)
    field_num = 0;
    value_num = 0;
 
-   while (field = field->right)
+   while ((field = field->right))
    {
       CHECK_ESCAPE (field_num < data->num_fields, break, "entry")
       CHECK (field->nodetype == BTAST_FIELD)
@@ -364,19 +339,19 @@ boolean goodtest_regular (AST * entry, test_data * data)
 
    CHECK (bt_entry_metatype (entry) == BTE_REGULAR);
    CHECK (strcmp (bt_entry_type (entry), "book") == 0);
-   CHECK (strcmp (bt_cite_key (entry), "abook") == 0);
+   CHECK (strcmp (bt_entry_key (entry), "abook") == 0);
 
    field = NULL;
    field_num = 0;
    value_num = 0;
 
-   while (field = bt_next_field (entry, field, &field_name))
+   while ((field = bt_next_field (entry, field, &field_name)))
    {
       CHECK_ESCAPE (field_num < data->num_fields, break, "entry");
       CHECK (strcmp (field_name, data->fields[field_num++]) == 0);
 
       value = NULL;
-      while (value = bt_next_value (field,value,&value_nodetype,&value_text))
+      while ((value = bt_next_value (field,value,&value_nodetype,&value_text)))
       {
          CHECK_ESCAPE (value_num < data->num_values, break, "field");
          CHECK (value_nodetype == data->ntypes[value_num]);
@@ -406,19 +381,19 @@ boolean goodtest_macro (AST * entry, test_data * data)
 
    CHECK (bt_entry_metatype (entry) == BTE_MACRODEF);
    CHECK (strcmp (bt_entry_type (entry), "string") == 0);
-   CHECK (bt_cite_key (entry) == NULL);
+   CHECK (bt_entry_key (entry) == NULL);
 
    macro = NULL;
    macro_num = 0;
    value_num = 0;
 
-   while (macro = bt_next_macro (entry, macro, &macro_name))
+   while ((macro = bt_next_macro (entry, macro, &macro_name)))
    {
       CHECK_ESCAPE (macro_num < data->num_fields, break, "entry");
       CHECK (strcmp (macro_name, data->fields[macro_num++]) == 0);
 
       value = NULL;
-      while (value = bt_next_value (macro,value,&value_nodetype,&value_text))
+      while ((value = bt_next_value (macro,value,&value_nodetype,&value_text)))
       {
          CHECK_ESCAPE (value_num < data->num_values, break, "macro");
          CHECK (value_nodetype == data->ntypes[value_num]);
@@ -464,7 +439,7 @@ boolean goodtest_preamble (AST * entry, test_data * data)
 
    value = NULL;
    value_num = 0;
-   while (value = bt_next_value (entry, value, &value_nodetype, &value_text))
+   while ((value = bt_next_value (entry, value, &value_nodetype, &value_text)))
    {
       CHECK_ESCAPE (value_num < data->num_values, break, "entry");
       CHECK (value_nodetype == BTAST_STRING);
@@ -539,7 +514,7 @@ boolean test_wholefile (char * filename,
    CHECK (entry_ok);
 
    entry = NULL;
-   while (entry = bt_next_entry (entries, entry))
+   while ((entry = bt_next_entry (entries, entry)))
    {
       CHECK_ESCAPE (entry_num < num_entries, break, "file");
 
@@ -560,34 +535,10 @@ boolean test_wholefile (char * filename,
 }
 
 
-FILE *open_file (char *basename, char *dirname, char *filename)
-{
-   FILE * file;
-
-   sprintf (filename, "%s/%s", dirname, basename);
-   file = fopen (filename, "r");
-   if (file == NULL)
-   {
-      perror (filename);
-      exit (1);
-   }
-   return file;
-}      
-
-
-void set_all_stringopts (ushort options)
-{
-   bt_set_stringopts (BTE_REGULAR, options);
-   bt_set_stringopts (BTE_MACRODEF, options);
-   bt_set_stringopts (BTE_COMMENT, options);
-   bt_set_stringopts (BTE_PREAMBLE, options);
-}
-
-
 
 void main (void)
 {
-   int     i;
+   unsigned i;
    char    filename[256];
    FILE *  infile;
    AST *   entry;

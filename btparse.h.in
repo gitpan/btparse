@@ -1,11 +1,15 @@
 /* ------------------------------------------------------------------------
 @NAME       : btparse.h
 @DESCRIPTION: Declarations and types for users of the btparse library.
+
+              (Actually, btparse.h is generated from btparse.h.in by
+              the `configure' script, in order to automatically determine
+              the appropriate values of HAVE_USHORT and HAVE_BOOLEAN.)
 @GLOBALS    : 
 @CALLS      : 
 @CREATED    : 1997/01/19, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: btparse.h,v 1.16 1997/09/10 02:02:07 greg Exp $
+@VERSION    : $Id: btparse.h.in,v 1.20 1997/10/19 18:33:44 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -21,18 +25,35 @@
 #include <stdio.h>
 
 /*
- * Every Unix variant I have access to (Linux, IRIX, SunOS) has a typedef
- * for 'ushort' in <sys/types.h>.  If this isn't true for some Unix, then
- * compilation will fail shortly (I use 'ushort' extensively in this 
- * header), and you'll have to adjust the #ifdef to reflect your
- * system.  *Please* tell me if you have to do so!
+ * Here we attempt to define HAVE_USHORT if a typdef for `ushort' appears
+ * in <sys/types.h>.  The detective work is actually done by the
+ * `configure' script, so if compilation fails because of duplicate
+ * definitions of `ushort', that's a bug in `configure' -- please tell me
+ * about it!
  */
-#ifdef __unix
-# define HAVE_USHORT
+
+#define HAVE_USHORT_XSUB 0
+
+#if defined(H_PERL) && HAVE_USHORT_XSUB
+# ifndef HAVE_USHORT
+#  define HAVE_USHORT 1
+# endif
+#endif
+
+#ifndef HAVE_USHORT
+# define HAVE_USHORT 0
+#endif
+
+#if ! HAVE_USHORT                       /* needed for various bitmaps */
+typedef unsigned short ushort;
 #endif
 
 
-#ifndef HAVE_BOOLEAN
+/* Likewise for boolean. */
+
+#define HAVE_BOOLEAN 0
+
+#if ! HAVE_BOOLEAN
 typedef int boolean;
 #endif
 
@@ -88,9 +109,10 @@ typedef enum
    E_CONTENT,                   /* warning about the content of a record */
    E_STRUCTURAL,                /* warning about the structure of a record */
    E_LEXWARN,                   /* warning in lexical analysis */
+   E_USAGEWARN,                 /* warning about library usage */
    E_LEXERR,                    /* error in lexical analysis */
    E_SYNTAX,                    /* error in parser */
-   E_FATAL,                     /* bigger problem (but still user's fault) */
+   E_USAGEERR,                  /* fatal error in library usage */
    E_INTERNAL                   /* my fault */
 } errclass_t;
 
@@ -123,11 +145,6 @@ typedef struct _ast
    char *           text;
 } AST;
 #endif /* USER_DEFINED_AST */
-
-
-#ifndef HAVE_USHORT                     /* needed for various bitmaps */
-typedef unsigned short ushort;
-#endif
 
 
 typedef struct
@@ -167,6 +184,28 @@ typedef struct tex_tree_s
 
 /* Function prototypes: */
 
+/* 
+ * First, we might need a prototype for strdup() (because the zzcr_ast
+ * macro uses it, and that macro is used in pccts/ast.c -- which I don't
+ * want to modify if I can help it, because it's someone else's code).
+ * This is to accomodate AIX, where including <string.h> apparently doesn't
+ * declare strdup() (reported by Reiner Schlotte
+ * <schlotte@geo.palmod.uni-bremen.de>), and compiling bibtex.c (which
+ * includes pccts/ast.c) crashes because of this (yes, yes, I know it
+ * should just be a warning -- I don't know what's going on there!).
+ * 
+ * Unfortunately, this duplicates code in bt_config.h -- I can't include
+ * bt_config.h here, because this header must be freestanding; I don't want
+ * to include bt_config.h in pccts/ast.c, because I don't want to touch the
+ * PCCTS code if I can help it; but I don't want every source file that
+ * uses strdup() to have to include btparse.h.  Hence the duplication.
+ * Yuck.  */
+#define HAVE_STRDUP_DECL 0
+#if !HAVE_STRDUP_DECL
+extern char *strdup (const char *s);
+#endif
+
+
 /* init.c */
 void  bt_initialize (void);
 void  bt_free_ast (AST *ast);
@@ -197,7 +236,7 @@ ushort error_status (int *saved_counts);
 AST *bt_next_entry (AST *entry_list, AST *prev_entry);
 bt_metatype_t bt_entry_metatype (AST *entry);
 char *bt_entry_type (AST *entry);
-char *bt_cite_key (AST *entry);
+char *bt_entry_key (AST *entry);
 AST *bt_next_field (AST *entry, AST *prev, char **name);
 AST *bt_next_macro (AST *entry, AST *prev, char **name);
 AST *bt_next_value (AST *head, 

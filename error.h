@@ -5,7 +5,7 @@
               library).
 @CREATED    : Summer 1996, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: error.h,v 1.8 1997/09/06 22:57:19 greg Exp $
+@VERSION    : $Id: error.h,v 1.9 1997/09/26 13:36:25 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -33,9 +33,10 @@ void content_warning (AST * ast, char *format,...);
 void name_warning (char *filename, int line, char *format, ...);
 void structural_warning (AST * ast, char *format,...);
 void lexical_warning (char *format,...);
+void usage_warning (char *format,...);
 void lexical_error (char *format,...);
 void syntax_error (char *format,...);
-void fatal_error (char *format,...);
+void usage_error (char *format,...);
 void internal_error (char *format,...);
 
 #endif

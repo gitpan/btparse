@@ -6,7 +6,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/09-10, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: args.c,v 1.5 1997/09/06 23:14:31 greg Exp $
+@VERSION    : $Id: args.c,v 1.5 1997/09/06 23:14:31 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part

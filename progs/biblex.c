@@ -17,7 +17,7 @@
               bt_token_stream() (also mythical).
 @CREATED    : Winter 1997, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: biblex.c,v 1.1 1997/09/06 23:19:14 greg Exp $
+@VERSION    : $Id: biblex.c,v 1.1 1997/09/06 23:19:14 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part

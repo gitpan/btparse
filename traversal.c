@@ -5,7 +5,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/21, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: traversal.c,v 1.11 1997/09/10 02:02:07 greg Exp $
+@VERSION    : $Id: traversal.c,v 1.12 1997/09/29 18:32:57 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -61,7 +61,7 @@ char *bt_entry_type (AST *entry)
 }
 
 
-char *bt_cite_key (AST *entry)
+char *bt_entry_key (AST *entry)
 {
    if (entry->metatype == BTE_REGULAR &&
        entry->down && entry->down->nodetype == BTAST_KEY)

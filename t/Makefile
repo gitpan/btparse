@@ -4,14 +4,30 @@ LIBDIR  = ..
 INCDIR  = ..
 LIB     = btparse
 LIBFILE = lib$(LIB).a
-CFLAGS  = $(OPT) -I$(INCDIR)
+CPPFLAGS = -I$(INCDIR)
+
 LDFLAGS = -L$(LIBDIR) $(OTHERLIBDIRS) -l$(LIB) $(OTHERLIBS)
 
-test : simple_test
-	./simple_test 2> /dev/null
+TESTLIB_SRC = testlib.c
+TESTLIB_OBJ = testlib.o
+TESTLIB_HDR = testlib.h
 
-simple_test : simple_test.o lib
-	$(CC) $(CFLAGS) -o $@ simple_test.o $(LDFLAGS)
+SIMPLE = simple_test
+READ   = read_test
+
+all test : simple read
+
+read : $(READ)
+	./$(READ) 2> /dev/null
+
+simple : $(SIMPLE)
+	./$(SIMPLE) 2> /dev/null
+
+$(SIMPLE) : $(SIMPLE).o $(TESTLIB_OBJ) lib
+	$(CC) $(CFLAGS) -o $@ $(SIMPLE).o $(TESTLIB_OBJ) $(LDFLAGS)
+
+$(READ) : $(READ).o $(TESTLIB_OBJ) lib
+	$(CC) $(CFLAGS) -o $@ $(READ).o $(TESTLIB_OBJ) $(LDFLAGS)
 
 lib :
 	cd $(LIBDIR) ; make $(LIBFILE)

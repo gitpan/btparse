@@ -8,7 +8,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/08, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: parse_auxiliary.h,v 1.3 1997/09/06 22:57:21 greg Exp $
+@VERSION    : $Id: parse_auxiliary.h,v 1.3 1997/09/06 22:57:21 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is

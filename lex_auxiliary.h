@@ -5,7 +5,7 @@
               are explicitly called from the lexer actions in bibtex.g.
 @CREATED    : Summer 1996, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: lex_auxiliary.h,v 1.11 1997/09/06 22:44:36 greg Exp $
+@VERSION    : $Id: lex_auxiliary.h,v 1.11 1997/09/06 22:44:36 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is

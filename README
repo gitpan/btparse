@@ -1,9 +1,9 @@
-                                btparse
-                  (a C library to parse BibTeX files)
+                                  btparse
+                    (a C library to parse BibTeX files)
 
-                              version 0.2
-                           8 September, 1997
-                   Greg Ward (greg@bic.mni.mcgill.ca)
+                               version 0.21
+                             20 October, 1997
+                    Greg Ward (greg@bic.mni.mcgill.ca)
                                     
 Copyright (c) 1997 by Gregory P. Ward.  All rights reserved.
 
@@ -64,23 +64,47 @@ BUILDING
 To build the library (which you will have to do in any case, even if you
 just want to use it through my Perl module), do the following:
 
-   1) Take a look in Makefile.defs; in particular, you might have to 
-      change CC, OPT, ARFLAGS, and RANLIB, especially if you're running 
-      an archaic OS such as SunOS.
+   1) run the 'configure' script provided with the package 
+
+      The 'configure' script will attempt to find an ANSI-compliant C
+      compiler, first by looking for 'gcc', and then for 'cc'; if neither
+      were found, or 'cc' was attempted but is not ANSI compliant, you'll
+      have to tell configure the name of an ANSI-compliant C compiler to
+      use.  You can do this by setting the 'CC' environment variable before
+      running 'configure'; e.g. for csh-like shells:
+         env CC=acc ./configure
+      and for Bourne-like shells:
+         CC=acc ./configure
+      (assuming 'acc' is the name of an ANSI-compliant C compiler on your
+      system).  If you need to supply extra flags to the C compiler to put
+      it in "ANSI mode", use the CFLAGS variable, e.g. (for Bourne-like
+      shells):
+         CC=cc CFLAGS=-ansi ./configure
+      (assuming 'cc' can be made ANSI-compliant by supplying the '-ansi'
+      flag on its command line).
+
+      'configure' also tends to be rather conservative in coming up with
+      optimization flags; if, for instance, you wish to compile with
+      '-O2' instead of '-g -O' (the default for gcc), do this:
+         CFLAGS=-O2 ./configure
+
+      If you plan on installing the library, you might want to set the
+      'installation prefix' before running 'configure'.  See the file
+      INSTALL for more details (and, for that matter, more details on 
+      everything that 'configure' does).
+
+      Apart from that, 'configure' should work without intervention.
 
    2) Type `make lib'.
 
    3) Type `make test'.
 
-If anything goes wrong with the build process, double-check that your C
-compiler is ANSI-compliant (if you're trying to use "cc" under SunOS or
-Solaris, it isn't!).  If you're sure that everything is in working order
-at your end, feel free to email me.
+If anything goes wrong with the build process, please email me.
 
 If any of the tests fail, *please* contact me and let me know.  It might
 be helpful to run the test program manually (switch into the "t"
-directory and run "simple_test"), as "make test" discards any error
-messages.
+directory and run "simple_test" or "read_test", depending on which one
+failed), as "make test" discards any error messages.
 
 If you're just doing this in order to build Text::BibTeX, you're done --
 go back to the Text::BibTeX README for further instructions.
@@ -89,7 +113,15 @@ If you're building btparse for use in your own C programs, you might
 want to install it and/or build a shared library.  To install the
 library:
 
-   4) Edit Makefile.dirs to reflect your preferred installation location.
+   4) Take a look at Makefile.defs to make sure you like the
+      installation directories; if you don't, either edit Makefile.defs
+      or re-run 'configure' with a custom installation prefix.  For example:
+        configure --prefix=/tmp/junk
+      to install to /tmp/junk/lib, /tmp/junk/include, and
+      /tmp/junk/man/man3).
+
+      Keep in mind that if you edit Makefile.defs, any changes there
+      will be lost the next time you run 'configure'.
 
    5) Type `make install'.
 
@@ -132,15 +164,16 @@ let me know.
 EXAMPLE PROGRAMS
 ----------------
 
-Included in the "progs" directory are two example programs, bibparse and
-biblex.  The former provides an example of a well-behaved, useful program
-based on btparse; by default, it reads a series of BibTeX files (named on
-the command line), parses them, and prints their data out in a form that is
-dead easy to parse in almost any language.  (I used this as a preliminary
-to the full-blown Text::BibTeX Perl module; to parse BibTeX data, I just
-opened a pipe reading the output of bibparse, and used simple Perl code to
-parse the data.)  bibparse uses GNU getopt, but I've included the necessary
-files with the distribution so you shouldn't have any problems building it.
+Included in the "progs" directory are three example programs, bibparse,
+biblex, and dumpnames.  bibparse provides an example of a well-behaved,
+useful program based on btparse; by default, it reads a series of BibTeX
+files (named on the command line), parses them, and prints their data
+out in a form that is dead easy to parse in almost any language.  (I
+used this as a preliminary to the full-blown Text::BibTeX Perl module;
+to parse BibTeX data, I just opened a pipe reading the output of
+bibparse, and used simple Perl code to parse the data.)  bibparse uses
+GNU getopt, but I've included the necessary files with the distribution
+so you shouldn't have any problems building it.
 
 biblex is an example of what *not* to do; it rudely pokes into the
 internals of both the library and the PCCTS-generated lexical scanner on
@@ -149,10 +182,31 @@ according to my lexical grammar.  Do *not* use this program as an example!
 I found it useful in debugging the lexical analyzer and parser, and provide
 it solely for your amusement.
 
-Both of these programs are unsupported, under-commented, and
-undocumented (apart from the above paragraphs).  If you would like this
-to change, tell me about it -- if nobody except me is interested in
-them, then unsupported and undocumented they will remain.
+dumpnames is, for variety, well-behaved.  It uses the name-splitting
+algorithm supplied in the library (which emulates BibTeX's behaviour) to
+chop up lists of names and individual names, and dumps all such names
+found in any 'editor' or 'author' fields in a BibTeX file.
+
+These programs are unsupported, under-commented, and undocumented (apart
+from the above paragraphs).  If you would like this to change, tell me
+about it -- if nobody except me is interested in them, then unsupported
+and undocumented they will remain.
+
+
+CREDITS
+-------
+
+Thanks are due to the following people:
+
+  * for pointing out problems with the build process, and graciously
+    downloading and trying out sample code, mini distributions, and
+    whole test releases to help me come up with a portable solution:
+      Jason Christian (jason@primal.ucdavis.edu)
+      Reiner Schlotte (schlotte@geo.palmod.uni-bremen.de)
+
+  * for reporting bugs in the library (and in the related Perl interface):
+      Reiner Schlotte (schlotte@geo.palmod.uni-bremen.de)
+      Dirk Vleugels (vleugels@do.isst.fhg.de)
 
 
 BUGS

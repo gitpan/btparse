@@ -6,7 +6,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/12, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: macros.c,v 1.10 1997/09/10 02:02:07 greg Exp $
+@VERSION    : $Id: macros.c,v 1.11 1997/10/21 01:40:26 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -92,11 +92,7 @@ void add_macro (AST *assignment, ushort options)
        * had the desired effect.
        */
 
-      int len = strlen (value->text);
-
-      if (value->nodetype != BTAST_STRING || value->right != NULL ||
-          value->text[0] == '"' || value->text[0] == '{' ||
-          value->text[len-1] == '"' || value->text[len-1] == '}')
+      if (value->nodetype != BTAST_STRING || value->right != NULL)
       {
          internal_error ("add_macro: macro value was not " 
                          "correctly preprocessed");

@@ -8,7 +8,7 @@
 @CREATED    : 1997/05/05, Greg Ward (as string_util.c)
 @MODIFIED   : 1997/05/14-05/16, GW: added all the code to split individual 
                                     names, renamed file to names.c
-@VERSION    : $Id: names.c,v 1.8 1997/09/07 02:36:28 greg Exp $
+@VERSION    : $Id: names.c,v 1.9 1997/10/01 12:56:16 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -19,10 +19,26 @@
 -------------------------------------------------------------------------- */
 
 #include "bt_config.h"
+
+#ifdef __GNUC__                         /* this is from the Autoconf docs */
+# define alloca __builtin_alloca
+#else
+# if HAVE_ALLOCA_H
+#  include <alloca.h>
+# else
+#  ifdef _AIX
+#   pragma alloca
+#  else
+#   ifndef alloca                       /* predefined by HP cc +Olibcalls */
+char *alloca ();
+#   endif
+#  endif
+# endif
+#endif
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <alloca.h>
 #include <ctype.h>
 #include "btparse.h"
 #include "prototypes.h"
@@ -142,6 +158,7 @@ bt_split_list (char *   string,
          update_depth (string, i, depth);
          inword = (i < string_len) && (string[i] != ' ');
          i++;
+         j = 0;
       }
    }
 

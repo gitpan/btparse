@@ -1,7 +1,0 @@
-# Makefile fragment to set the directories for installation
-
-PREFIX      = /usr/local
-INSTALL_INC = $(PREFIX)/include
-INSTALL_LIB = $(PREFIX)/lib
-INSTALL_MAN = $(PREFIX)/man
-INSTALL_MAN3 = $(INSTALL_MAN)/man3

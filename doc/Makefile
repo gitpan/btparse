@@ -1,7 +1,7 @@
 # Makefile for the 'doc' directory of the btparse distribution
 
+include ../Makefile.defs        # for installation dirs
 include ../Makefile.version	# get VERSION and RELEASE_DATE macros
-include ../Makefile.dirs	# get installation dirs
 
 
 POD = bt_input.pod				\

@@ -8,7 +8,7 @@
                  strupr
 @CREATED    : Summer 1996, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: util.c,v 1.5 1997/09/07 02:36:28 greg Exp $
+@VERSION    : $Id: util.c,v 1.5 1997/09/07 02:36:28 greg Rel $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
