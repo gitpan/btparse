@@ -3,7 +3,7 @@
 @DESCRIPTION: Macros and prototypes common to all the btparse test programs.
 @CREATED    : 1997/09/26, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: testlib.h,v 1.1 1997/09/26 13:15:35 greg Rel $
+@VERSION    : $Id: testlib.h,v 1.3 2003/10/24 01:12:40 greg Exp $
 -------------------------------------------------------------------------- */
 
 #ifndef TESTLIB_H
@@ -11,7 +11,10 @@
 
 #include "btparse.h"
 
-#define DATA_DIR "data"
+#ifndef DATA_DIR
+# define DATA_DIR "data"
+#endif
+
 
 #define CHECK(cond)                                             \
 if (! (cond))                                                   \

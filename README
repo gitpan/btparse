@@ -1,11 +1,11 @@
                                   btparse
                     (a C library to parse BibTeX files)
 
-                               version 0.33
-                            22 December, 1999
+                               version 0.34
+                             25 October, 2003
                        Greg Ward (gward@python.net)
                                     
-Copyright (c) 1997-2000 by Gregory P. Ward.  All rights reserved.
+Copyright (c) 1997-2003 by Gregory P. Ward.  All rights reserved.
 
 This library is free software; you can redistribute it and/or modify it
 under the terms of the GNU Library General Public License as published by
@@ -82,80 +82,59 @@ BUILDING
 To build the library (which you will have to do in any case, even if you
 just want to use it through my Perl module), do the following:
 
-   1) run the 'configure' script provided with the package 
+  ./configure
+  make
 
-      The 'configure' script will attempt to find an ANSI-compliant C
-      compiler, first by looking for 'gcc', and then for 'cc'; if neither
-      were found, or 'cc' was attempted but is not ANSI compliant, you'll
-      have to tell configure the name of an ANSI-compliant C compiler to
-      use.  You can do this by setting the 'CC' environment variable before
-      running 'configure'; e.g. for csh-like shells:
-         env CC=acc ./configure
-      and for Bourne-like shells:
-         CC=acc ./configure
-      (assuming 'acc' is the name of an ANSI-compliant C compiler on your
-      system).  If you need to supply extra flags to the C compiler to put
-      it in "ANSI mode", use the CFLAGS variable, e.g. (for Bourne-like
-      shells):
-         CC=cc CFLAGS=-ansi ./configure
-      (assuming 'cc' can be made ANSI-compliant by supplying the '-ansi'
-      flag on its command line).
+(See the file INSTALL for more details on running the configure script.)
 
-      'configure' also tends to be rather conservative in coming up with
-      optimization flags; if, for instance, you wish to compile with
-      '-O2' instead of '-g -O' (the default for gcc), do this:
-         CFLAGS=-O2 ./configure
+To run the test suite:
 
-      If you plan on installing the library, you might want to set the
-      'installation prefix' before running 'configure'.  See the file
-      INSTALL for more details (and, for that matter, more details on
-      everything that 'configure' does).  The default installation prefix
-      is '/usr/local', which should be fine for most Unix systems.
+  make check
 
-      Apart from that, 'configure' should work without intervention.
-
-   2) Type `make lib'.
-
-   3) Type `make test'.
-
-If anything goes wrong with the build process, please email me.
-
-If any of the tests fail, *please* contact me and let me know.  It might
-be helpful to run the test program manually (switch into the "t"
-directory and run "simple_test" or "read_test", depending on which one
-failed), as "make test" discards any error messages.
+If any of the tests fail, please contact me and let me know.
 
 If you're just doing this in order to build Text::BibTeX, you're done --
 go back to the Text::BibTeX README for further instructions.
 
-If you're building btparse for use in your own C programs, you might
-want to build a shared library and/or install the library.  To build the
-shared library :
+If you're building btparse for use in your own C programs, you'll
+probably want to install the library (shared and static):
 
-   4) Type `make shlib'.  This should work on modern, ELF-based systems
-      such as Linux, IRIX 5+, or Solaris 2.x (?).  For installing the
-      shared library, you're on your own; this is just too
-      system-dependent.
+  make install
 
-To install the library and man pages:
+This installs the following files under the 'prefix' directory supplied
+to 'configure' (default: "/usr"):
 
-   5) Take a look at Makefile.defs to make sure you like the
-      installation directories; if you don't, either edit Makefile.defs
-      or re-run 'configure' with a custom installation prefix.  For example:
-        configure --prefix=/tmp/junk
-      to install to /tmp/junk/lib, /tmp/junk/include, and
-      /tmp/junk/man/man3).
+  bin/bibparse
+  lib/libbtparse.la
+  lib/libbtparse.so.0.0.0
+  lib/libbtparse.a
+  man/man3/bt_format_names.3
+  man/man3/bt_traversal.3
+  man/man3/bt_language.3
+  man/man3/bt_input.3
+  man/man3/bt_macros.3
+  man/man3/bt_misc.3
+  man/man3/bt_postprocess.3
+  man/man3/bt_split_names.3
+  man/man3/btparse.3
+  include/btparse.h
 
-      Keep in mind that if you edit Makefile.defs, any changes there
-      will be lost the next time you run 'configure'.
 
-   6) Type `make install'.
+BUILDING FROM CVS
+-----------------
 
-`make install' will install the static library file (libbtparse.a), the
-header file that you need to include in your programs to use btparse
-(btparse.h), and the man pages from the "doc" directory.  Again,
-installing the shared library is too system-dependent -- you're on your
-own for that.
+If you're building from the CVS repository rather than from a source
+distribution, run these commands first:
+
+  aclocal
+  libtoolize --force
+  automake --foreign --add-missing
+  autoconf
+
+Then carry on as above, ie. run "./configure" and so forth.
+
+(At least, this works for me.  It requires GNU Automake (1.6 or later)
+and GNU Autoconf.)
 
 
 DOCUMENTATION
@@ -265,4 +244,4 @@ use of the library and will result in your program crashing.
 
 Other bugs should be reported to me: Greg Ward <gward@python.net>.
 
-$Id: README,v 1.13 2000/12/23 03:52:02 greg Exp $
+$Id: README,v 1.15 2003/10/22 01:13:04 greg Exp $
