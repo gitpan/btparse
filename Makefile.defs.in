@@ -4,7 +4,7 @@
 # Makefile macro definitions for possibly non-portable stuff for
 # the btparse library.
 #
-# $Id: Makefile.defs.in,v 1.9 1999/11/30 01:58:29 greg Rel $
+# $Id: Makefile.defs.in,v 1.10 2000/05/14 15:49:21 greg Exp $
 #
 
 # If you plan to install btparse on your system, you might want to change
@@ -65,16 +65,3 @@ PERL = @PERL@#                        # needed for run_pccts
 
 AFLAGS = -ga -gh -gt
 DFLAGS = -C2 -i
-
-
-.SUFFIXES: .i
-
-# Replace the standard implicit .c.o rule to use both CFLAGS and CPPFLAGS,
-# in the GNU manner (ie. like autoconf expects)
-.c.o :
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
-
-# This is handy for debugging on occasion (stripcpp is a sed hack of
-# my own devising, and indent is just GNU indent).
-.c.i :
-	$(CC) $(CFLAGS) $(CPPFLAGS) -E $< | stripcpp | indent > $@

@@ -1,11 +1,11 @@
                                   btparse
                     (a C library to parse BibTeX files)
 
-                               version 0.32
-                             28 November, 1999
+                               version 0.33
+                            22 December, 1999
                        Greg Ward (gward@python.net)
                                     
-Copyright (c) 1997-99 by Gregory P. Ward.  All rights reserved.
+Copyright (c) 1997-2000 by Gregory P. Ward.  All rights reserved.
 
 This library is free software; you can redistribute it and/or modify it
 under the terms of the GNU Library General Public License as published by
@@ -244,10 +244,8 @@ Thanks are due to the following people:
   * for reporting bugs (and in some cases, fixing them) and suggesting
     changes in the library:
       Reiner Schlotte <schlotte@geo.palmod.uni-bremen.de>
-      Dirk Vleugels <vleugels@do.isst.fhg.de>
-      Kjetil Kjernsmo <kjetil.kjernsmo@astro.uio.no>
-      Andrew Cassin <acassin@cs.mu.oz.au>
       Stéphane Genaud <genaud@icps.u-strasbg.fr>
+      Claus Wilke <claus.wilke@gmx.net>
 
   * for sage wisdom, the voice of experience, and inspiration:
       Oren Patashnik <opbibtex@labrea.Stanford.EDU>
@@ -267,4 +265,4 @@ use of the library and will result in your program crashing.
 
 Other bugs should be reported to me: Greg Ward <gward@python.net>.
 
-$Id: README,v 1.10 1999/11/29 03:01:29 greg Rel $
+$Id: README,v 1.13 2000/12/23 03:52:02 greg Exp $

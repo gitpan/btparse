@@ -6,7 +6,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/12, Greg Ward (from code in bibparse.c, lex_auxiliary.c)
 @MODIFIED   : 
-@VERSION    : $Id: postprocess.c,v 1.23 1999/11/29 01:13:10 greg Rel $
+@VERSION    : $Id: postprocess.c,v 1.25 2000/05/02 23:06:31 greg Exp $
 @COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -31,15 +31,12 @@
 /* ------------------------------------------------------------------------
 @NAME       : bt_postprocess_string ()
 @INPUT      : s
-              collapse_whitespace
+              options
 @OUTPUT     : s (modified in place according to the flags)
 @RETURNS    : (void)
 @DESCRIPTION: Make a pass over string s (which is modified in-place) to
-              do some subset of the following operations:
-                 * collapse whitespace according to BibTeX rules
-
-              (All are optional, and controlled by the obviously-named flag
-              parameters.)
+              optionally collapse whitespace according to BibTeX rules
+              (if the BTO_COLLAPSE bit in options is true).
 
               Rules for collapsing whitespace are:
                  * whitespace at beginning/end of string is deleted
@@ -68,28 +65,19 @@ bt_postprocess_string (char * s, ushort options)
 #endif
 
    /* Extract any relevant options (just one currently) to local flags. */
-
    collapse_whitespace = options & BTO_COLLAPSE;
-
-
-   /* First, assert the assumptions about s. */
-
-   len = strlen (s);
 
    /*
     * N.B. i and j will both point into s; j is always >= i, and
     * we copy characters from j to i.  Whitespace is collapsed/deleted
     * by advancing j without advancing i.
     */
-
    i = j = s;                           /* start both at beginning of string */
-
 
    /*
     * If we're supposed to collapse whitespace, then advance j to the
     * first non-space character.
     */
-
    if (collapse_whitespace)
    {
       while (*j == ' ' && *j != (char) 0)
@@ -98,13 +86,11 @@ bt_postprocess_string (char * s, ushort options)
 
    while (*j != (char) 0)
    {
-
       /*
        * If we're in a string of spaces (ie. current and previous char.
        * are both space), and we're supposed to be collapsing whitespace,
        * then skip until we hit a non-space character (or end of string).
        */
-
       if (collapse_whitespace && *j == ' ' && *(j-1) == ' ') 
       {
          while (*j == ' ') j++;         /* skip spaces */
@@ -113,7 +99,6 @@ bt_postprocess_string (char * s, ushort options)
       }
 
       /* Copy the current character from j down to i */
-
       *(i++) = *(j++);
    }
    *i = (char) 0;                       /* ensure string is terminated */
@@ -124,9 +109,8 @@ bt_postprocess_string (char * s, ushort options)
     * was any whitespace there, it has already been collapsed to exactly
     * one space.
     */
-
    len = strlen (s);
-   if (collapse_whitespace && s[len-1] == ' ')
+   if (len > 0 && collapse_whitespace && s[len-1] == ' ')
    {
       s[--len] = (char) 0;
    }

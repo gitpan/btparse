@@ -13,7 +13,7 @@
 @CALLERS    : 
 @CREATED    : 1997/07/29, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: simple_test.c,v 1.12 1999/11/24 03:02:23 greg Rel $
+@VERSION    : $Id: simple_test.c,v 1.13 2000/03/23 03:39:48 greg Exp $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part
@@ -538,8 +538,7 @@ boolean test_wholefile (char * filename,
 }
 
 
-
-void main (void)
+int main (void)
 {
    unsigned i;
    char    filename[256];
@@ -593,5 +592,5 @@ void main (void)
    else
       printf ("%d failed tests\n", num_failures);
 
-   exit (num_failures > 0);
+   return (num_failures > 0);
 }

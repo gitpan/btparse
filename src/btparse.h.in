@@ -9,7 +9,7 @@
 @CALLS      : 
 @CREATED    : 1997/01/19, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: btparse.h.in,v 1.34 1999/11/26 04:12:59 greg Rel $
+@VERSION    : $Id: btparse.h.in,v 1.35 1999/12/28 18:23:17 greg Exp $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -241,7 +241,11 @@ typedef struct
 typedef void (*bt_err_handler) (bt_error *);
 
 
-/* Function prototypes: */
+#if defined(__cplusplus__) || defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
+
+/* Function prototypes */
 
 /* 
  * First, we might need a prototype for strdup() (because the zzcr_ast
@@ -362,6 +366,8 @@ void bt_set_format_options (bt_name_format * format,
                             bt_joinmethod join_part);
 char * bt_format_name (bt_name * name, bt_name_format * format);
 
-
+#if defined(__cplusplus__) || defined(__cplusplus) || defined(c_plusplus)
+}
+#endif
 
 #endif /* BTPARSE_H */
