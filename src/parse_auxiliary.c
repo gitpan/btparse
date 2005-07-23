@@ -12,7 +12,7 @@
 @CALLERS    : 
 @CREATED    : 1996/08/07, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: parse_auxiliary.c,v 1.20 1999/11/29 01:13:10 greg Rel $
+@VERSION    : $Id: parse_auxiliary.c 640 1999-11-29 01:13:10Z greg $
 @COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is

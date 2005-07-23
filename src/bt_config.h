@@ -86,27 +86,27 @@
 #define PACKAGE_NAME "btparse"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "btparse 0.34"
+#define PACKAGE_STRING "btparse 0.35"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "btparse"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.34"
+#define PACKAGE_VERSION "0.35"
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
    automatically deduced at run-time.
-        STACK_DIRECTION > 0 => grows toward higher addresses
-        STACK_DIRECTION < 0 => grows toward lower addresses
-        STACK_DIRECTION = 0 => direction of growth unknown */
+	STACK_DIRECTION > 0 => grows toward higher addresses
+	STACK_DIRECTION < 0 => grows toward lower addresses
+	STACK_DIRECTION = 0 => direction of growth unknown */
 /* #undef STACK_DIRECTION */
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "0.34"
+#define VERSION "0.35"
 
 /* Define if using the dmalloc debugging malloc package */
 /* #undef WITH_DMALLOC */

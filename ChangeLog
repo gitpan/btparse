@@ -1,3 +1,17 @@
+2005-07-23  Alberto Manuel Brandão Simões  <albie@alfarrabio.di.uminho.pt>
+
+        released version 0.35
+	
+	* src/names.c (find_lc_tokens): corrected bug.
+
+	* configure.ac: bumped version to 0.35
+
+2005-07-22  Alberto Manuel Brandão Simões  <albie@alfarrabio.di.uminho.pt>
+
+	* Makefile.am: 
+	* btparse.pc: 
+	* configure.ac: added package-config configuration file
+
 2003-10-25  Greg Ward  <gward@python.net>
 
 	released version 0.34

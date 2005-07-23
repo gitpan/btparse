@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(btparse, 0.34)dnl
+AC_INIT(btparse, 0.35)dnl
 AC_CONFIG_SRCDIR(src/bibtex.g)dnl
 AC_PREREQ(2.57)dnl
 AM_INIT_AUTOMAKE
@@ -59,5 +59,11 @@ BTPARSE_CHECK_STRDUP
 AC_SUBST(INCLUDES)
 
 AM_CONFIG_HEADER(src/bt_config.h src/btparse.h)
-AC_CONFIG_FILES(Makefile doc/Makefile progs/Makefile src/Makefile tests/Makefile)
+AC_CONFIG_FILES(
+	btparse.pc
+	Makefile
+	doc/Makefile
+	progs/Makefile
+	src/Makefile
+	tests/Makefile)
 AC_OUTPUT

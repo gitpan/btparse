@@ -59,7 +59,7 @@ AVAILABILITY
 You can find the latest version of both components of btOOL (btparse and
 Text::BibTeX), as well as up-to-date information on btOOL, at:
 
-    http://starship.python.net/~gward/btOOL/
+    http://www.gerg.ca/software/btOOL/
 
 Here you will find HTML versions of the documentation, a technical
 report describing the project, links to download the code, and whatever
@@ -68,7 +68,8 @@ other goodies I can come up with over time.
 The software is also available in my author directory on any CPAN
 (Comprehensive Perl Archive Network) site, e.g.
 
-    ftp://cpan.perl.org/pub/CPAN/authors/Greg_Ward/
+    http://www.cpan.org/modules/by-authors/id/GWARD/
+    http://search.cpan.org/~gward/btparse-0.34/
 
 or on any CTAN (Comprehensive TeX Archive Network) site, in the
 biblio/bibtex/utils/btOOL/ directory, e.g.
@@ -244,4 +245,4 @@ use of the library and will result in your program crashing.
 
 Other bugs should be reported to me: Greg Ward <gward@python.net>.
 
-$Id: README,v 1.15 2003/10/22 01:13:04 greg Exp $
+$Id: README 741 2005-04-04 01:00:55Z greg $

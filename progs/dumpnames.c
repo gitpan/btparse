@@ -11,7 +11,7 @@
 @CALLERS    : 
 @CREATED    : 1997/09/29, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: dumpnames.c,v 1.2 1999/11/29 02:14:14 greg Rel $
+@VERSION    : $Id: dumpnames.c 643 1999-11-29 02:14:14Z greg $
 -------------------------------------------------------------------------- */
 
 #include <stdio.h>

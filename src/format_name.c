@@ -6,7 +6,7 @@
 @GLOBALS    : 
 @CREATED    : 
 @MODIFIED   : 
-@VERSION    : $Id: format_name.c,v 1.12 1999/11/29 01:13:10 greg Rel $
+@VERSION    : $Id: format_name.c 740 2004-03-28 14:56:25Z greg $
 @COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -391,6 +391,9 @@ string_length (char * string)
    boolean  in_special;
    int      i;
 
+   if (string == NULL)
+      return 0;
+
    length = 0;
    depth = 0;
    in_special = FALSE;
@@ -599,7 +602,7 @@ format_firstpass (bt_name *        name,
           * the physical length of the prefix of virtual length 1.
           */
          for (j = 0; j < num_tok; j++)
-            max_length += strlen (tok[j]);
+            max_length += STRLEN (tok[j]);
       }
 
    } /* for i (loop over parts) */

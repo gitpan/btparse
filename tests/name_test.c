@@ -3,7 +3,7 @@
  *
  * GPW 1997/11/03
  *
- * $Id: name_test.c,v 1.4 2003/10/19 18:57:37 greg Exp $
+ * $Id: name_test.c 723 2003-10-19 18:57:37Z greg $
  */
 
 #include <stdlib.h>

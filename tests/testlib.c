@@ -9,7 +9,7 @@
 @CALLERS    : 
 @CREATED    : 1997/09/26, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: testlib.c,v 1.3 2003/10/09 02:36:21 greg Exp $
+@VERSION    : $Id: testlib.c 714 2003-10-09 02:37:15Z greg $
 -------------------------------------------------------------------------- */
 
 #include "bt_config.h"

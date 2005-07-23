@@ -6,7 +6,7 @@
 @GLOBALS    : 
 @CREATED    : 1997/08/12, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: bibtex_ast.c,v 1.6 1999/11/29 01:13:10 greg Rel $
+@VERSION    : $Id: bibtex_ast.c 640 1999-11-29 01:13:10Z greg $
 @COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is

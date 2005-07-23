@@ -19,7 +19,7 @@
 @CREATED    : Greg Ward, 1996/07/25-28
 @MODIFIED   : Jan 1997
               Jun 1997
-@VERSION    : $Id: lex_auxiliary.c,v 1.33 2003/10/04 17:27:18 greg Exp $
+@VERSION    : $Id: lex_auxiliary.c 697 2003-10-04 17:27:18Z greg $
 @COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is

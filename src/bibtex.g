@@ -46,7 +46,7 @@
               Jun 1997, GPW: greatly simplified the lexer, and added handling
                              of %-comments, @comment and @preamble entries,
                              and proper scanning of between-entry junk
-@VERSION    : $Id: bibtex.g,v 1.23 1999/11/29 01:13:10 greg Rel $
+@VERSION    : $Id: bibtex.g 640 1999-11-29 01:13:10Z greg $
 @COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is

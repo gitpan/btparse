@@ -3,7 +3,7 @@
  * 
  * GPW 1997/11/25
  *
- * $Id: case_test.c,v 1.3 2003/10/19 18:57:37 greg Exp $
+ * $Id: case_test.c 723 2003-10-19 18:57:37Z greg $
  */
 
 #include <stdlib.h>

@@ -3,7 +3,7 @@
 @DESCRIPTION: All-out assault at making alloca() available on any Unix
               platform.  Stolen from the GNU Autoconf manual.
 @CREATED    : 1997/10/30, Greg Ward
-@VERSION    : $Id: my_alloca.h,v 1.1 1997/10/31 03:56:17 greg Rel $
+@VERSION    : $Id: my_alloca.h 343 1997-10-31 03:56:17Z greg $
 @COPYRIGHT  : This file is part of the btparse library.  This library is
               free software; you can redistribute it and/or modify it under
               the terms of the GNU Library General Public License as

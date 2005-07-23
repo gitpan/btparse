@@ -8,7 +8,7 @@
 @CREATED    : 1997/05/05, Greg Ward (as string_util.c)
 @MODIFIED   : 1997/05/14-05/16, GW: added all the code to split individual 
                                     names, renamed file to names.c
-@VERSION    : $Id: names.c,v 1.23 1999/11/29 01:13:10 greg Rel $
+@VERSION    : $Id: names.c 753 2005-07-23 20:13:48Z alberto $
 @COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is
@@ -497,7 +497,8 @@ find_lc_tokens (bt_stringlist * tokens,
    i = 0;
    while (i < tokens->num_items)
    {
-      if (*first_lc == -1 && islower (tokens->items[i][0]))
+      char * token = tokens->items[i];
+      if (*first_lc == -1 && token != NULL && islower (token[0]))
       {
          *first_lc = i;
 

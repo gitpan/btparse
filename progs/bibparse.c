@@ -9,7 +9,7 @@
 @GLOBALS    : 
 @CREATED    : May 1996, Greg Ward
 @MODIFIED   : 
-@VERSION    : $Id: bibparse.c,v 1.24 1998/03/14 16:39:16 greg Rel $
+@VERSION    : $Id: bibparse.c 519 1998-03-14 16:39:16Z greg $
 @COPYRIGHT  : Copyright (c) 1996-97 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse distribution (but not part

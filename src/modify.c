@@ -6,7 +6,7 @@
 @CREATED    : 1999/11/25, Greg Ward (based on code supplied by
               Stéphane Genaud <genaud@icps.u-strasbg.fr>)
 @MODIFIED   : 
-@VERSION    : $Id: modify.c,v 1.2 1999/11/29 01:13:10 greg Rel $
+@VERSION    : $Id: modify.c 640 1999-11-29 01:13:10Z greg $
 @COPYRIGHT  : Copyright (c) 1996-99 by Gregory P. Ward.  All rights reserved.
 
               This file is part of the btparse library.  This library is

@@ -13,7 +13,7 @@
 @CREATED    : 1997/10/19, Greg Ward
 @MODIFIED   : 1997/11/25, GPW: renamed to from purify.c to string_util.c
                                added bt_change_case() and friends
-@VERSION    : $Id: string_util.c,v 1.10 1999/10/28 22:50:28 greg Rel $
+@VERSION    : $Id: string_util.c 738 2004-03-28 14:29:19Z greg $
 -------------------------------------------------------------------------- */
 
 #include <stdlib.h>
@@ -187,6 +187,9 @@ foreign_letter (char *str, int start, int stop, bt_letter * letter)
                   { *letter = L_SSHARP_U; return TRUE; }
                else 
                   return FALSE;
+
+            default:
+               return FALSE;
          }
          break;
       default:
